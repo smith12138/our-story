@@ -52,13 +52,36 @@ function initSite() {
   loadGallery();
 }
 
-/* ---------- 纪念日计数 ---------- */
+/* ---------- 纪念日 + 生日计数 ---------- */
 function startCounter() {
-  if (!CFG.anniversary) return;
-  const start = new Date(CFG.anniversary);
-  if (isNaN(start)) return;
-  const days = Math.floor((Date.now() - start) / 86400000);
-  if (days >= 0) $("#counter").innerHTML = `我们已经相爱 <b>${days}</b> 天 · 还有一辈子要走 ♾`;
+  const lines = [];
+
+  if (CFG.anniversary) {
+    const start = new Date(CFG.anniversary);
+    if (!isNaN(start)) {
+      const days = Math.floor((Date.now() - start) / 86400000);
+      if (days >= 0) lines.push(`结婚已经 <b>${days}</b> 天 · 还有一辈子要走 ♾`);
+    }
+  }
+
+  if (CFG.birthday) {
+    const b = new Date(CFG.birthday);
+    if (!isNaN(b)) {
+      const now = new Date();
+      let next = new Date(now.getFullYear(), b.getMonth(), b.getDate());
+      if (next < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
+        next = new Date(now.getFullYear() + 1, b.getMonth(), b.getDate());
+      }
+      const left = Math.round((next - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
+      if (left === 0) {
+        lines.push(`🎂 今天是你的生日，生日快乐，我的宝贝！`);
+      } else {
+        lines.push(`距离你的生日还有 <b>${left}</b> 天 🎂`);
+      }
+    }
+  }
+
+  if (lines.length) $("#counter").innerHTML = lines.join("<br />");
 }
 
 /* ---------- 飘落花瓣 ---------- */
