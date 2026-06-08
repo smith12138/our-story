@@ -202,10 +202,53 @@
     window.PHOTOS.forEach((p) => {
       const d = document.createElement("div");
       d.className = "admin-thumb";
+      const tag = p.place ? `<span class="tag">📍${p.place.region || p.place.country || ""}</span>` : "";
       d.innerHTML = `<img src="photos/${encodeURIComponent(p.file)}" loading="lazy" alt="" />
-        <button title="删除">🗑</button>`;
-      d.querySelector("button").addEventListener("click", () => deletePhoto(p.file));
+        <button class="edit-place" title="标注地点">📍</button>
+        <button class="del" title="删除">🗑</button>${tag}`;
+      d.querySelector(".del").addEventListener("click", () => deletePhoto(p.file));
+      d.querySelector(".edit-place").addEventListener("click", () => openPlaceModal(p.file));
       grid.appendChild(d);
     });
   }
+
+  /* ---------- 地点标注 ---------- */
+  let placeTarget = null;
+  function openPlaceModal(file) {
+    placeTarget = file;
+    const p = window.PHOTOS.find((x) => x.file === file);
+    el("#place-preview").src = "photos/" + encodeURIComponent(file);
+    el("#place-country").value = (p && p.place && p.place.country) || "";
+    el("#place-region").value = (p && p.place && p.place.region) || "";
+    el("#place-msg").textContent = "";
+    el("#place-modal").classList.remove("hidden");
+  }
+  function closePlaceModal() { el("#place-modal").classList.add("hidden"); placeTarget = null; }
+  el(".place-x").addEventListener("click", closePlaceModal);
+  el("#place-modal").addEventListener("click", (e) => { if (e.target.id === "place-modal") closePlaceModal(); });
+
+  async function savePlace(clear) {
+    if (!placeTarget) return;
+    const country = clear ? "" : el("#place-country").value.trim();
+    const region = clear ? "" : el("#place-region").value.trim();
+    if (!clear && !country && !region) { el("#place-msg").textContent = "请至少填写国家或地区"; return; }
+    el("#place-msg").textContent = "保存中…";
+    const photos = window.PHOTOS.map((p) => {
+      if (p.file !== placeTarget) return p;
+      const np = { ...p };
+      if (clear || (!country && !region)) delete np.place;
+      else np.place = { country, region };
+      return np;
+    });
+    try {
+      await putManifest(photos);
+      renderAdminGrid();
+      closePlaceModal();
+      log(`✓ 地点已更新：${placeTarget}`, "ok");
+    } catch (err) {
+      el("#place-msg").textContent = "保存失败：" + err.message;
+    }
+  }
+  el("#place-save").addEventListener("click", () => savePlace(false));
+  el("#place-clear").addEventListener("click", () => savePlace(true));
 })();

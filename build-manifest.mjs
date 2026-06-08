@@ -14,6 +14,16 @@ const IMG_RE = /\.(jpe?g|png|webp|gif)$/i;
 
 const places = existsSync(PLACES) ? JSON.parse(readFileSync(PLACES, "utf8")) : {};
 
+// 保留上一次清单里手动标注的地点（后台标注只写进 photos.json）
+const prevPlace = {};
+if (existsSync(OUT)) {
+  try {
+    for (const p of JSON.parse(readFileSync(OUT, "utf8")).photos || []) {
+      if (p.place) prevPlace[p.file] = p.place;
+    }
+  } catch {}
+}
+
 // Pull a sortable timestamp out of common phone filenames, e.g.
 //   IMG20250128173052.jpg      -> 2025-01-28 17:30:52
 //   IMG_20250320_131906.jpg    -> 2025-03-20 13:19:06
@@ -37,8 +47,11 @@ const files = readdirSync(PHOTOS_DIR).filter((f) => IMG_RE.test(f));
 const photos = files
   .map((file) => {
     const p = { file, date: parseDate(file) };
-    const loc = places[file];
-    if (loc && loc.city) p.place = { city: loc.city, country: loc.country || "" };
+    // 优先用 GPS 反查的 places.json，其次保留后台手动标注
+    const loc = places[file] || prevPlace[file];
+    if (loc && (loc.region || loc.country)) {
+      p.place = { country: loc.country || "", region: loc.region || loc.city || "" };
+    }
     return p;
   })
   .sort((a, b) => {

@@ -38,9 +38,23 @@
         <h1 id="hero-title" class="hero-title">致我最爱的你</h1>
         <p id="hero-sub" class="hero-sub">我们走过的每一个瞬间</p>
         <p id="counter" class="counter"></p>
+        <p id="love-quote" class="love-quote"></p>
         <div class="scroll-hint">⌄</div>
       </div>
     </header>
+
+    <!-- Slideshow / 轮播 -->
+    <section id="slideshow" class="slideshow hidden">
+      <div class="ss-stage">
+        <img id="ss-a" class="ss-img" alt="" />
+        <img id="ss-b" class="ss-img" alt="" />
+        <div class="ss-shade"></div>
+        <div id="ss-cap" class="ss-cap"></div>
+        <button id="ss-prev" class="ss-nav ss-prev" aria-label="上一张">‹</button>
+        <button id="ss-next" class="ss-nav ss-next" aria-label="下一张">›</button>
+        <button id="ss-play" class="ss-play" aria-label="播放/暂停">⏸</button>
+      </div>
+    </section>
 
     <!-- Gallery -->
     <section class="gallery-wrap">
@@ -65,6 +79,23 @@
     <button class="lb-next" aria-label="下一张">›</button>
     <div id="lb-caption" class="lb-caption"></div>
   </div>
+
+  <!-- ░░ 身份选择 ░░ -->
+  <div id="identity" class="identity hidden">
+    <div class="identity-card">
+      <div class="gate-heart">💞</div>
+      <h2 class="identity-title">是谁来啦？</h2>
+      <p class="identity-sub">告诉我你是谁，让我好好宠你 ❤</p>
+      <div id="identity-choices" class="identity-choices"></div>
+    </div>
+  </div>
+
+  <!-- ░░ Toast ░░ -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- ░░ 背景音乐 ░░ -->
+  <button id="music-btn" class="music-btn hidden" title="背景音乐">♪</button>
+  <audio id="music-audio" loop></audio>
 
   <!-- ░░ 生日庆祝 ░░ -->
   <div id="birthday-overlay" class="birthday-overlay hidden">
@@ -117,6 +148,22 @@
         </p>
         <div id="admin-grid" class="admin-grid"></div>
         <button id="token-forget" class="btn ghost">退出 / 清除令牌</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ░░ 地点标注 ░░ -->
+  <div id="place-modal" class="admin hidden">
+    <div class="admin-card" style="max-width:420px">
+      <button class="place-x admin-x" aria-label="关闭">×</button>
+      <h2>标注地点</h2>
+      <img id="place-preview" class="place-preview" alt="" />
+      <div class="admin-step">
+        <input id="place-country" type="text" placeholder="国家（如：越南）" />
+        <input id="place-region" type="text" placeholder="地区 / 城市（如：胡志明市）" />
+        <button id="place-save" class="btn">保存地点</button>
+        <button id="place-clear" class="btn ghost">清除该照片地点</button>
+        <p id="place-msg" class="gate-error"></p>
       </div>
     </div>
   </div>

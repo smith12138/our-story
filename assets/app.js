@@ -21,6 +21,7 @@ function unlock() {
   $("#app").classList.remove("hidden");
   $("#admin-fab").classList.remove("hidden");
   initSite();
+  askIdentity();
 }
 
 async function checkGate(pw) {
@@ -49,6 +50,9 @@ function initSite() {
   if (CFG.names) $("#footer-names").textContent = CFG.names;
   startPetals();
   startCounter();
+  startLoveQuote();
+  initMusic();
+  initClickHearts();
   loadGallery();
 }
 
@@ -157,6 +161,7 @@ async function loadGallery() {
     window.PHOTOS = [];
   }
   renderGallery();
+  startSlideshow();
 }
 
 function fmtDate(iso) {
@@ -172,28 +177,39 @@ const UNTAGGED = "__untagged__";
 let activeFilter = ALL;
 window.VISIBLE = []; // 当前筛选下可见的照片（灯箱也用它翻页）
 
-function cityOf(p) { return p.place && p.place.city ? p.place.city : null; }
+// 地点完整标签：「国家 · 地区」
+function placeLabel(p) {
+  if (!p.place) return null;
+  const { country, region } = p.place;
+  const s = [country, region].filter(Boolean).join(" · ");
+  return s || null;
+}
+// 卡片上的短标签（优先地区）
+function placeShort(p) {
+  if (!p.place) return null;
+  return p.place.region || p.place.country || null;
+}
 
 function buildFilters() {
   const box = $("#filters");
   box.innerHTML = "";
   if (!window.PHOTOS.length) return;
 
-  // 统计各城市数量
+  // 统计各地点数量
   const counts = {};
   let untagged = 0;
   window.PHOTOS.forEach((p) => {
-    const c = cityOf(p);
+    const c = placeLabel(p);
     if (c) counts[c] = (counts[c] || 0) + 1;
     else untagged++;
   });
 
-  const cities = Object.keys(counts);
-  // 只有一个或没有地点信息时，不显示筛选条
-  if (cities.length === 0) return;
+  const places = Object.keys(counts);
+  // 完全没有地点信息时，不显示筛选条
+  if (places.length === 0) return;
 
   const chips = [{ key: ALL, label: "全部", n: window.PHOTOS.length }];
-  cities.sort((a, b) => counts[b] - counts[a]).forEach((c) =>
+  places.sort((a, b) => counts[b] - counts[a]).forEach((c) =>
     chips.push({ key: c, label: c, n: counts[c] })
   );
   if (untagged) chips.push({ key: UNTAGGED, label: "未标注地点", n: untagged });
@@ -213,8 +229,8 @@ function buildFilters() {
 
 function filteredPhotos() {
   if (activeFilter === ALL) return window.PHOTOS;
-  if (activeFilter === UNTAGGED) return window.PHOTOS.filter((p) => !cityOf(p));
-  return window.PHOTOS.filter((p) => cityOf(p) === activeFilter);
+  if (activeFilter === UNTAGGED) return window.PHOTOS.filter((p) => !placeLabel(p));
+  return window.PHOTOS.filter((p) => placeLabel(p) === activeFilter);
 }
 
 function renderGallery() {
@@ -231,7 +247,7 @@ function renderGallery() {
   window.VISIBLE.forEach((p, i) => {
     const card = document.createElement("div");
     card.className = "card";
-    const place = cityOf(p) ? ` · 📍${cityOf(p)}` : "";
+    const place = placeShort(p) ? ` · 📍${placeShort(p)}` : "";
     card.innerHTML = `
       <img src="photos/${encodeURIComponent(p.file)}" alt="" loading="lazy" decoding="async" />
       <span class="date">${fmtDate(p.date)}${place}</span>`;
@@ -259,7 +275,7 @@ function showLb() {
   const p = list[lbIndex];
   if (!p) return;
   $("#lb-img").src = "photos/" + encodeURIComponent(p.file);
-  const loc = p.place && p.place.city ? ` · 📍${p.place.city}${p.place.country ? "，" + p.place.country : ""}` : "";
+  const loc = placeLabel(p) ? ` · 📍${placeLabel(p)}` : "";
   $("#lb-caption").textContent = fmtDate(p.date) + loc;
 }
 function step(d) {
@@ -277,3 +293,195 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") step(1);
   if (e.key === "ArrowLeft") step(-1);
 });
+
+/* ============================================================
+ *  身份选择 · 欢迎 · Toast
+ * ============================================================ */
+const VIEWER_KEY = "ourstory_viewer";
+
+function toast(msg, ms = 3200) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.remove("hidden");
+  requestAnimationFrame(() => t.classList.add("show"));
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => {
+    t.classList.remove("show");
+    setTimeout(() => t.classList.add("hidden"), 400);
+  }, ms);
+}
+
+function currentViewer() {
+  const key = localStorage.getItem(VIEWER_KEY);
+  return (CFG.viewers || []).find((v) => v.key === key) || null;
+}
+
+function welcome(v) {
+  const partner = (CFG.viewers || []).find((x) => x.key !== v.key);
+  const line = partner
+    ? `欢迎回来，${v.short} ${v.emoji} · ${partner.short}很想你哦 💕`
+    : `欢迎回来，${v.short} ${v.emoji}`;
+  toast(line, 4000);
+}
+
+function askIdentity() {
+  const viewers = CFG.viewers || [];
+  if (!viewers.length) return;
+  const existing = currentViewer();
+  if (existing) { welcome(existing); return; }
+
+  const box = $("#identity-choices");
+  box.innerHTML = "";
+  viewers.forEach((v) => {
+    const el = document.createElement("div");
+    el.className = "id-pick";
+    el.innerHTML = `<div class="id-emoji">${v.emoji}</div>
+      <div class="id-short">${v.short}</div>
+      <div class="id-name">${v.name}</div>`;
+    el.addEventListener("click", () => {
+      localStorage.setItem(VIEWER_KEY, v.key);
+      $("#identity").classList.add("hidden");
+      burstHearts(window.innerWidth / 2, window.innerHeight / 2, 14);
+      welcome(v);
+    });
+    box.appendChild(el);
+  });
+  $("#identity").classList.remove("hidden");
+}
+
+/* ============================================================
+ *  每日情话（打字机）
+ * ============================================================ */
+function startLoveQuote() {
+  const quotes = CFG.loveQuotes || [];
+  if (!quotes.length) return;
+  // 按一年中的第几天选句，每天一句
+  const now = new Date();
+  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+  const text = quotes[dayOfYear % quotes.length];
+  const el = $("#love-quote");
+  el.textContent = "";
+  el.classList.remove("done");
+  let i = 0;
+  (function type() {
+    if (i <= text.length) {
+      el.textContent = text.slice(0, i++);
+      setTimeout(type, 110);
+    } else {
+      el.classList.add("done");
+    }
+  })();
+}
+
+/* ============================================================
+ *  幻灯片轮播
+ * ============================================================ */
+let ssList = [], ssIdx = 0, ssTimer = null, ssActive = "a", ssPlaying = true;
+const SS_INTERVAL = 6000;
+
+function shuffle(a) {
+  const r = a.slice();
+  for (let i = r.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
+}
+
+function startSlideshow() {
+  const sec = $("#slideshow");
+  if (!window.PHOTOS.length) { sec.classList.add("hidden"); return; }
+  // 取最多 15 张随机照片作为轮播
+  ssList = shuffle(window.PHOTOS).slice(0, Math.min(15, window.PHOTOS.length));
+  ssIdx = 0; ssActive = "a"; ssPlaying = true;
+  sec.classList.remove("hidden");
+  $("#ss-play").textContent = "⏸";
+  showSlide(0, true);
+  scheduleSlide();
+}
+
+function scheduleSlide() {
+  clearTimeout(ssTimer);
+  if (ssPlaying) ssTimer = setTimeout(() => nextSlide(1), SS_INTERVAL);
+}
+
+function showSlide(idx, instant) {
+  const p = ssList[idx];
+  if (!p) return;
+  const incoming = ssActive === "a" ? $("#ss-a") : $("#ss-b");
+  const outgoing = ssActive === "a" ? $("#ss-b") : $("#ss-a");
+  incoming.src = "photos/" + encodeURIComponent(p.file);
+  incoming.classList.add("show", "kb");
+  incoming.style.zIndex = 2;
+  outgoing.style.zIndex = 1;
+  outgoing.classList.remove("show", "kb");
+  const loc = placeLabel(p) ? ` · 📍${placeLabel(p)}` : "";
+  $("#ss-cap").textContent = fmtDate(p.date) + loc;
+  ssActive = ssActive === "a" ? "b" : "a";
+}
+
+function nextSlide(d) {
+  ssIdx = (ssIdx + d + ssList.length) % ssList.length;
+  showSlide(ssIdx);
+  scheduleSlide();
+}
+
+$("#ss-next").addEventListener("click", () => nextSlide(1));
+$("#ss-prev").addEventListener("click", () => nextSlide(-1));
+$("#ss-play").addEventListener("click", () => {
+  ssPlaying = !ssPlaying;
+  $("#ss-play").textContent = ssPlaying ? "⏸" : "▶";
+  scheduleSlide();
+});
+$(".ss-stage").addEventListener("mouseenter", () => { clearTimeout(ssTimer); });
+$(".ss-stage").addEventListener("mouseleave", () => scheduleSlide());
+
+/* ============================================================
+ *  点击爱心绽放
+ * ============================================================ */
+function burstHearts(x, y, n = 6) {
+  const glyphs = ["❤", "💕", "💗", "💖", "🌸"];
+  for (let i = 0; i < n; i++) {
+    const h = document.createElement("div");
+    h.className = "fheart";
+    h.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+    h.style.left = x + (Math.random() * 50 - 25) + "px";
+    h.style.top = y + (Math.random() * 20 - 10) + "px";
+    h.style.fontSize = 16 + Math.random() * 18 + "px";
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1200);
+  }
+}
+
+function initClickHearts() {
+  document.addEventListener("click", (e) => {
+    // 交互元素与弹层上不触发，避免干扰
+    if (e.target.closest("button, a, input, .card, .chip, .id-pick, .admin, .identity, .lightbox, .ss-stage, .admin-fab, .music-btn"))
+      return;
+    burstHearts(e.clientX, e.clientY, 5);
+  });
+}
+
+/* ============================================================
+ *  灯箱双击点赞飘心
+ * ============================================================ */
+$("#lb-img").addEventListener("dblclick", (e) => {
+  burstHearts(e.clientX, e.clientY, 12);
+});
+
+/* ============================================================
+ *  背景音乐（可选）
+ * ============================================================ */
+function initMusic() {
+  if (!CFG.musicUrl) return;
+  const btn = $("#music-btn");
+  const audio = $("#music-audio");
+  audio.src = CFG.musicUrl;
+  btn.classList.remove("hidden");
+  let on = false;
+  btn.addEventListener("click", () => {
+    on = !on;
+    if (on) { audio.play().catch(() => {}); btn.classList.add("playing"); }
+    else { audio.pause(); btn.classList.remove("playing"); }
+  });
+}

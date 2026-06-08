@@ -16,8 +16,8 @@
       "file": "IMG20260519094515.jpg",
       "date": "2026-05-19T09:45:15",
       "place": {
-        "city": "吉隆坡",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "吉隆坡"
       }
     },
     {
@@ -32,8 +32,8 @@
       "file": "IMG20260518230231.jpg",
       "date": "2026-05-18T23:02:31",
       "place": {
-        "city": "吉隆坡",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "吉隆坡"
       }
     },
     {
@@ -60,16 +60,16 @@
       "file": "IMG20260518184314.jpg",
       "date": "2026-05-18T18:43:14",
       "place": {
-        "city": "吉隆坡",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "吉隆坡"
       }
     },
     {
       "file": "IMG20260518184244.jpg",
       "date": "2026-05-18T18:42:44",
       "place": {
-        "city": "吉隆坡",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "吉隆坡"
       }
     },
     {
@@ -80,8 +80,8 @@
       "file": "IMG20260518114810.jpg",
       "date": "2026-05-18T11:48:10",
       "place": {
-        "city": "士拉央",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "士拉央"
       }
     },
     {
@@ -92,48 +92,48 @@
       "file": "IMG20260518114140.jpg",
       "date": "2026-05-18T11:41:40",
       "place": {
-        "city": "士拉央",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "士拉央"
       }
     },
     {
       "file": "IMG20260518113110.jpg",
       "date": "2026-05-18T11:31:10",
       "place": {
-        "city": "士拉央",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "士拉央"
       }
     },
     {
       "file": "IMG20260518111818.jpg",
       "date": "2026-05-18T11:18:18",
       "place": {
-        "city": "士拉央",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "士拉央"
       }
     },
     {
       "file": "IMG20260518111437.jpg",
       "date": "2026-05-18T11:14:37",
       "place": {
-        "city": "士拉央",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "士拉央"
       }
     },
     {
       "file": "IMG20260518111429.jpg",
       "date": "2026-05-18T11:14:29",
       "place": {
-        "city": "士拉央",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "士拉央"
       }
     },
     {
       "file": "IMG20260518111135.jpg",
       "date": "2026-05-18T11:11:35",
       "place": {
-        "city": "士拉央",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "士拉央"
       }
     },
     {
@@ -148,32 +148,32 @@
       "file": "IMG20260517191131.jpg",
       "date": "2026-05-17T19:11:31",
       "place": {
-        "city": "吉隆坡",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "吉隆坡"
       }
     },
     {
       "file": "IMG20260517191123.jpg",
       "date": "2026-05-17T19:11:23",
       "place": {
-        "city": "吉隆坡",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "吉隆坡"
       }
     },
     {
       "file": "IMG20260517191037.jpg",
       "date": "2026-05-17T19:10:37",
       "place": {
-        "city": "吉隆坡",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "吉隆坡"
       }
     },
     {
       "file": "IMG20260517190819.jpg",
       "date": "2026-05-17T19:08:19",
       "place": {
-        "city": "吉隆坡",
-        "country": "马来西亚"
+        "country": "马来西亚",
+        "region": "吉隆坡"
       }
     },
     {
@@ -184,8 +184,8 @@
       "file": "IMG20260501103350.jpg",
       "date": "2026-05-01T10:33:50",
       "place": {
-        "city": "Cái Nhum",
-        "country": "越南"
+        "country": "越南",
+        "region": "Cái Nhum"
       }
     },
     {
@@ -300,48 +300,48 @@
       "file": "IMG20260101001114.jpg",
       "date": "2026-01-01T00:11:14",
       "place": {
-        "city": "守德市",
-        "country": "越南"
+        "country": "越南",
+        "region": "守德市"
       }
     },
     {
       "file": "IMG20251207143118.jpg",
       "date": "2025-12-07T14:31:18",
       "place": {
-        "city": "守德市",
-        "country": "越南"
+        "country": "越南",
+        "region": "守德市"
       }
     },
     {
       "file": "IMG20251108212912.jpg",
       "date": "2025-11-08T21:29:12",
       "place": {
-        "city": "胡志明市",
-        "country": "越南"
+        "country": "越南",
+        "region": "胡志明市"
       }
     },
     {
       "file": "IMG20251108212752.jpg",
       "date": "2025-11-08T21:27:52",
       "place": {
-        "city": "胡志明市",
-        "country": "越南"
+        "country": "越南",
+        "region": "胡志明市"
       }
     },
     {
       "file": "IMG20251019205839.jpg",
       "date": "2025-10-19T20:58:39",
       "place": {
-        "city": "守德市",
-        "country": "越南"
+        "country": "越南",
+        "region": "守德市"
       }
     },
     {
       "file": "IMG20251019182531.jpg",
       "date": "2025-10-19T18:25:31",
       "place": {
-        "city": "守德市",
-        "country": "越南"
+        "country": "越南",
+        "region": "守德市"
       }
     },
     {
