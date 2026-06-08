@@ -52,37 +52,83 @@ function initSite() {
   loadGallery();
 }
 
-/* ---------- 纪念日 + 生日计数 ---------- */
+/* ---------- 纪念日 + 生日提醒 ---------- */
+function midnight(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+// 计算距离某人下一个生日还有几天（0 = 今天）
+function daysUntilBirthday(birthday) {
+  const b = new Date(birthday);
+  if (isNaN(b)) return null;
+  const today = midnight(new Date());
+  let next = new Date(today.getFullYear(), b.getMonth(), b.getDate());
+  if (next < today) next = new Date(today.getFullYear() + 1, b.getMonth(), b.getDate());
+  return Math.round((next - today) / 86400000);
+}
+
 function startCounter() {
   const lines = [];
 
+  // 结婚天数
   if (CFG.anniversary) {
     const start = new Date(CFG.anniversary);
     if (!isNaN(start)) {
-      const days = Math.floor((Date.now() - start) / 86400000);
+      const days = Math.floor((midnight(new Date()) - midnight(start)) / 86400000);
       if (days >= 0) lines.push(`结婚已经 <b>${days}</b> 天 · 还有一辈子要走 ♾`);
     }
   }
 
-  if (CFG.birthday) {
-    const b = new Date(CFG.birthday);
-    if (!isNaN(b)) {
-      const now = new Date();
-      let next = new Date(now.getFullYear(), b.getMonth(), b.getDate());
-      if (next < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
-        next = new Date(now.getFullYear() + 1, b.getMonth(), b.getDate());
-      }
-      const left = Math.round((next - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 86400000);
-      if (left === 0) {
-        lines.push(`🎂 今天是你的生日，生日快乐，我的宝贝！`);
-      } else {
-        lines.push(`距离你的生日还有 <b>${left}</b> 天 🎂`);
-      }
+  // 生日提醒
+  const within = CFG.birthdayRemindWithinDays ?? 30;
+  const people = CFG.people || [];
+  let birthdayToday = null;
+
+  people.forEach((p) => {
+    const left = daysUntilBirthday(p.birthday);
+    if (left === null) return;
+    if (left === 0) {
+      birthdayToday = p;
+      lines.push(`🎂 今天是 <b>${p.name}</b> 的生日 · 生日快乐！`);
+    } else if (left <= within) {
+      lines.push(`🎈 距离 <b>${p.name}</b> 的生日还有 <b>${left}</b> 天`);
     }
-  }
+  });
 
   if (lines.length) $("#counter").innerHTML = lines.join("<br />");
+
+  if (birthdayToday) celebrateBirthday(birthdayToday);
 }
+
+/* ---------- 生日庆祝动画 ---------- */
+function celebrateBirthday(person) {
+  // 同一人当天只自动弹一次
+  const key = "bday_" + person.name + "_" + midnight(new Date()).toISOString().slice(0, 10);
+  if (sessionStorage.getItem(key)) return;
+  sessionStorage.setItem(key, "1");
+
+  const ov = $("#birthday-overlay");
+  $("#bd-name").textContent = person.name;
+  ov.classList.remove("hidden");
+
+  // 气球 + 彩纸
+  const stage = $("#bd-stage");
+  stage.innerHTML = "";
+  const balloons = ["🎈", "🎈", "🎈", "🎉", "💝", "🌹", "🎂", "🧁"];
+  for (let i = 0; i < 28; i++) {
+    const s = document.createElement("div");
+    s.className = "bd-float";
+    s.textContent = balloons[i % balloons.length];
+    s.style.left = Math.random() * 100 + "vw";
+    s.style.fontSize = 22 + Math.random() * 24 + "px";
+    s.style.animationDuration = 4 + Math.random() * 5 + "s";
+    s.style.animationDelay = Math.random() * 3 + "s";
+    stage.appendChild(s);
+  }
+}
+document.addEventListener("click", (e) => {
+  if (e.target.id === "bd-close" || e.target.id === "birthday-overlay") {
+    document.querySelector("#birthday-overlay").classList.add("hidden");
+  }
+});
 
 /* ---------- 飘落花瓣 ---------- */
 function startPetals() {

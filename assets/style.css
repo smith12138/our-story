@@ -204,6 +204,36 @@ body {
 }
 .admin-thumb button:hover { background: #c0392b; }
 
+/* ---------- birthday celebration ---------- */
+.birthday-overlay {
+  position: fixed; inset: 0; z-index: 80; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; padding: 22px;
+  background: radial-gradient(800px 600px at 50% 40%, rgba(58,31,43,.85), rgba(12,6,9,.95));
+  backdrop-filter: blur(6px); animation: fade .4s ease;
+}
+.bd-stage { position: absolute; inset: 0; pointer-events: none; }
+.bd-float { position: absolute; bottom: -10vh; animation: floatUp linear infinite; will-change: transform; }
+@keyframes floatUp {
+  0%   { transform: translateY(0) rotate(0); opacity: 0; }
+  12%  { opacity: 1; }
+  100% { transform: translateY(-120vh) rotate(40deg); opacity: 0; }
+}
+.bd-card {
+  position: relative; z-index: 1; text-align: center; max-width: 440px; width: 100%;
+  padding: 46px 34px; border-radius: 26px;
+  background: rgba(40,22,30,.72); border: 1px solid rgba(232,160,176,.35);
+  box-shadow: var(--shadow); animation: rise .6s ease both;
+}
+.bd-cake { font-size: 64px; animation: bob 2s ease-in-out infinite; }
+.bd-title {
+  font-family: var(--hand); font-weight: 400; font-size: 46px; margin: 6px 0 4px;
+  background: linear-gradient(135deg, var(--rose), var(--gold));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.bd-name-line { font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--cream); margin-bottom: 16px; }
+.bd-name-line span { color: var(--rose); font-style: normal; }
+.bd-msg { color: var(--muted); line-height: 1.9; margin-bottom: 26px; font-size: 15px; }
+
 /* ---------- animations ---------- */
 @keyframes beat { 0%,100%{transform:scale(1)} 25%{transform:scale(1.18)} 40%{transform:scale(1)} }
 @keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }

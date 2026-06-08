@@ -8,13 +8,19 @@ window.SITE_CONFIG = {
   subtitle: "我们走过的每一个瞬间",
 
   // 你们的名字（显示在页脚，可留空）
-  names: "LÊ HUYỀN TRÂN ❤",
+  names: "谭明辉 ❤ LÊ HUYỀN TRÂN",
 
   // 结婚纪念日（用于首页“结婚 N 天”计数，格式 YYYY-MM-DD；留空则不显示）
   anniversary: "2025-10-07",
 
-  // 老婆的生日（用于首页生日倒数，格式 YYYY-MM-DD；留空则不显示）
-  birthday: "2003-08-18",
+  // ---------- 生日提醒 ----------
+  // 想加更多人，照样在数组里加一行即可（格式 YYYY-MM-DD）。
+  // 临近生日(默认 30 天内)首页会提醒；生日当天会弹出庆祝动画。
+  people: [
+    { name: "谭明辉", birthday: "1998-10-21" },
+    { name: "LÊ HUYỀN TRÂN", birthday: "2003-08-18" },
+  ],
+  birthdayRemindWithinDays: 30,
 
   // ---------- 访问密码 ----------
   // 进入相册的密码（结婚纪念日: 20251007）。
