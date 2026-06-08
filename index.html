@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>致我最爱的你 · Our Story</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💕</text></svg>" />
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <!-- 飘落的花瓣 / falling petals -->
+  <div class="petals" aria-hidden="true"></div>
+
+  <!-- ░░ 密码门 ░░ -->
+  <div id="gate" class="gate">
+    <div class="gate-card">
+      <div class="gate-heart">💗</div>
+      <h1 class="gate-title">我们的故事</h1>
+      <p class="gate-sub">输入密码，进入属于我们的回忆</p>
+      <form id="gate-form" autocomplete="off">
+        <input id="gate-input" type="password" placeholder="请输入密码" aria-label="密码" />
+        <button type="submit">进 入 ❤</button>
+      </form>
+      <p id="gate-error" class="gate-error"></p>
+    </div>
+  </div>
+
+  <!-- ░░ 主体 ░░ -->
+  <main id="app" class="app hidden">
+    <!-- Hero -->
+    <header class="hero">
+      <div class="hero-inner">
+        <p class="hero-eyebrow">FOR YOU, MY LOVE</p>
+        <h1 id="hero-title" class="hero-title">致我最爱的你</h1>
+        <p id="hero-sub" class="hero-sub">我们走过的每一个瞬间</p>
+        <p id="counter" class="counter"></p>
+        <div class="scroll-hint">⌄</div>
+      </div>
+    </header>
+
+    <!-- Gallery -->
+    <section class="gallery-wrap">
+      <div class="section-label"><span>我们的回忆</span></div>
+      <div id="gallery" class="gallery"></div>
+      <p id="empty" class="empty hidden">还没有照片，进入“管理”上传第一张吧 💞</p>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-heart">❤</div>
+      <p id="footer-names" class="footer-names"></p>
+      <p class="footer-tip">轻触照片可放大 · 双击空白处呼出管理</p>
+    </footer>
+  </main>
+
+  <!-- ░░ 灯箱 ░░ -->
+  <div id="lightbox" class="lightbox hidden">
+    <button class="lb-close" aria-label="关闭">×</button>
+    <button class="lb-prev" aria-label="上一张">‹</button>
+    <img id="lb-img" class="lb-img" alt="" />
+    <button class="lb-next" aria-label="下一张">›</button>
+    <div id="lb-caption" class="lb-caption"></div>
+  </div>
+
+  <!-- ░░ 管理后台 ░░ -->
+  <button id="admin-fab" class="admin-fab hidden" title="管理照片">⚙</button>
+  <div id="admin" class="admin hidden">
+    <div class="admin-card">
+      <button class="admin-x" aria-label="关闭">×</button>
+      <h2>照片管理</h2>
+
+      <!-- step 1: admin password -->
+      <div id="admin-lock" class="admin-step">
+        <p class="admin-hint">输入管理密码以解锁</p>
+        <input id="admin-pass" type="password" placeholder="管理密码" />
+        <button id="admin-unlock" class="btn">解锁</button>
+        <p id="admin-lock-err" class="gate-error"></p>
+      </div>
+
+      <!-- step 2: github token -->
+      <div id="admin-token" class="admin-step hidden">
+        <p class="admin-hint">
+          首次使用请粘贴 GitHub 令牌（用于把改动保存到仓库）。<br />
+          <a href="https://github.com/settings/tokens/new?scopes=repo&description=our-story-admin" target="_blank" rel="noopener">点此创建令牌</a>
+          （勾选 <code>repo</code> 权限），令牌只保存在本机浏览器。
+        </p>
+        <input id="gh-token" type="password" placeholder="ghp_xxx 或 github_pat_xxx" />
+        <button id="token-save" class="btn">保存令牌</button>
+        <p id="token-err" class="gate-error"></p>
+      </div>
+
+      <!-- step 3: manage -->
+      <div id="admin-panel" class="admin-step hidden">
+        <div class="upload-zone" id="upload-zone">
+          <input id="file-input" type="file" accept="image/*" multiple hidden />
+          <span>＋ 点击或拖拽照片到此上传</span>
+        </div>
+        <div id="admin-log" class="admin-log"></div>
+        <p class="admin-hint" style="margin-top:14px">
+          下方为现有照片，点 🗑 即可删除（会同步到 GitHub）。
+        </p>
+        <div id="admin-grid" class="admin-grid"></div>
+        <button id="token-forget" class="btn ghost">退出 / 清除令牌</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="assets/app.js"></script>
+  <script src="assets/admin.js"></script>
+</body>
+</html>
