@@ -166,7 +166,59 @@ function fmtDate(iso) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
+/* ---------- 按地点筛选 ---------- */
+const ALL = "__all__";
+const UNTAGGED = "__untagged__";
+let activeFilter = ALL;
+window.VISIBLE = []; // 当前筛选下可见的照片（灯箱也用它翻页）
+
+function cityOf(p) { return p.place && p.place.city ? p.place.city : null; }
+
+function buildFilters() {
+  const box = $("#filters");
+  box.innerHTML = "";
+  if (!window.PHOTOS.length) return;
+
+  // 统计各城市数量
+  const counts = {};
+  let untagged = 0;
+  window.PHOTOS.forEach((p) => {
+    const c = cityOf(p);
+    if (c) counts[c] = (counts[c] || 0) + 1;
+    else untagged++;
+  });
+
+  const cities = Object.keys(counts);
+  // 只有一个或没有地点信息时，不显示筛选条
+  if (cities.length === 0) return;
+
+  const chips = [{ key: ALL, label: "全部", n: window.PHOTOS.length }];
+  cities.sort((a, b) => counts[b] - counts[a]).forEach((c) =>
+    chips.push({ key: c, label: c, n: counts[c] })
+  );
+  if (untagged) chips.push({ key: UNTAGGED, label: "未标注地点", n: untagged });
+
+  chips.forEach((c) => {
+    const el = document.createElement("button");
+    el.className = "chip" + (c.key === activeFilter ? " active" : "");
+    el.innerHTML = `${c.label}<span class="n">${c.n}</span>`;
+    el.addEventListener("click", () => {
+      activeFilter = c.key;
+      buildFilters();
+      renderGallery();
+    });
+    box.appendChild(el);
+  });
+}
+
+function filteredPhotos() {
+  if (activeFilter === ALL) return window.PHOTOS;
+  if (activeFilter === UNTAGGED) return window.PHOTOS.filter((p) => !cityOf(p));
+  return window.PHOTOS.filter((p) => cityOf(p) === activeFilter);
+}
+
 function renderGallery() {
+  buildFilters();
   const g = $("#gallery");
   g.innerHTML = "";
   if (!window.PHOTOS.length) {
@@ -175,12 +227,14 @@ function renderGallery() {
   }
   $("#empty").classList.add("hidden");
 
-  window.PHOTOS.forEach((p, i) => {
+  window.VISIBLE = filteredPhotos();
+  window.VISIBLE.forEach((p, i) => {
     const card = document.createElement("div");
     card.className = "card";
+    const place = cityOf(p) ? ` · 📍${cityOf(p)}` : "";
     card.innerHTML = `
       <img src="photos/${encodeURIComponent(p.file)}" alt="" loading="lazy" decoding="async" />
-      <span class="date">${fmtDate(p.date)}</span>`;
+      <span class="date">${fmtDate(p.date)}${place}</span>`;
     card.addEventListener("click", () => openLightbox(i));
     g.appendChild(card);
   });
@@ -201,13 +255,16 @@ function openLightbox(i) {
   $("#lightbox").classList.remove("hidden");
 }
 function showLb() {
-  const p = window.PHOTOS[lbIndex];
+  const list = window.VISIBLE;
+  const p = list[lbIndex];
   if (!p) return;
   $("#lb-img").src = "photos/" + encodeURIComponent(p.file);
-  $("#lb-caption").textContent = fmtDate(p.date);
+  const loc = p.place && p.place.city ? ` · 📍${p.place.city}${p.place.country ? "，" + p.place.country : ""}` : "";
+  $("#lb-caption").textContent = fmtDate(p.date) + loc;
 }
 function step(d) {
-  lbIndex = (lbIndex + d + window.PHOTOS.length) % window.PHOTOS.length;
+  const len = window.VISIBLE.length;
+  lbIndex = (lbIndex + d + len) % len;
   showLb();
 }
 $(".lb-close").addEventListener("click", () => $("#lightbox").classList.add("hidden"));

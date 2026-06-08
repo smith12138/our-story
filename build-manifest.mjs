@@ -5,12 +5,14 @@
 // add/delete photos in the browser — you only need this script if you ever
 // drop files into photos/ manually and want to regenerate the list.
 
-import { readdirSync, writeFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 
 const PHOTOS_DIR = "photos";
 const OUT = "photos.json";
+const PLACES = "places.json"; // 文件名 -> { city, country }（由带 GPS 的照片反查得到）
 const IMG_RE = /\.(jpe?g|png|webp|gif)$/i;
+
+const places = existsSync(PLACES) ? JSON.parse(readFileSync(PLACES, "utf8")) : {};
 
 // Pull a sortable timestamp out of common phone filenames, e.g.
 //   IMG20250128173052.jpg      -> 2025-01-28 17:30:52
@@ -33,7 +35,12 @@ if (!existsSync(PHOTOS_DIR)) {
 const files = readdirSync(PHOTOS_DIR).filter((f) => IMG_RE.test(f));
 
 const photos = files
-  .map((file) => ({ file, date: parseDate(file) }))
+  .map((file) => {
+    const p = { file, date: parseDate(file) };
+    const loc = places[file];
+    if (loc && loc.city) p.place = { city: loc.city, country: loc.country || "" };
+    return p;
+  })
   .sort((a, b) => {
     // Newest first; files without a parsed date sink to the bottom.
     if (a.date && b.date) return b.date.localeCompare(a.date);

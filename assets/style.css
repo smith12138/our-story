@@ -117,6 +117,21 @@ body {
 }
 .section-label span::before { left: -6px; } .section-label span::after { right: -6px; }
 
+/* ---------- filters ---------- */
+.filters { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 0 auto 34px; max-width: 900px; }
+.chip {
+  cursor: pointer; padding: 8px 16px; border-radius: 999px; font-size: 14px;
+  color: var(--cream); background: rgba(255,255,255,.05);
+  border: 1px solid rgba(232,160,176,.28); transition: .25s; font-family: var(--sc);
+}
+.chip:hover { border-color: var(--rose); color: var(--rose); }
+.chip.active {
+  color: #2a121a; border-color: transparent; font-weight: 600;
+  background: linear-gradient(135deg, var(--rose), var(--gold));
+}
+.chip .n { opacity: .7; font-size: 12px; margin-left: 4px; }
+.chip.active .n { opacity: .85; }
+
 .gallery { columns: 4 260px; column-gap: 16px; }
 .card {
   break-inside: avoid; margin-bottom: 16px; border-radius: 16px; overflow: hidden;
