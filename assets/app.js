@@ -619,8 +619,9 @@ function initMusic() {
 
   if (!url) { btn.classList.add("hidden"); audio.pause(); return; }
 
-  // 文件存在才显示按钮（避免出现一个点了没反应的按钮）
-  fetch(url, { method: "HEAD" })
+  // 文件存在才显示按钮（避免出现一个点了没反应的按钮）；加时间戳防止缓存旧的 404
+  const probe = url + (url.includes("?") ? "&" : "?") + "v=" + Date.now();
+  fetch(probe, { method: "HEAD", cache: "no-store" })
     .then((r) => {
       if (r.ok) { audio.src = url; btn.classList.remove("hidden"); }
       else btn.classList.add("hidden");

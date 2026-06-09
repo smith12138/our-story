@@ -76,7 +76,16 @@
         if (meta && meta.sha) sha = meta.sha;
         await ghPut(path, b64, `chore: update music ${path}`, sha);
         log(t("admMusicOk") + path, "ok");
-        if (typeof initMusic === "function") initMusic(); // 立即让音乐按钮出现
+        // 立即生效：若上传的是当前身份的歌，直接用本地文件播放，不必等 Pages 部署
+        const cur = (typeof currentViewer === "function") ? currentViewer() : null;
+        if (cur && window.SITE_CONFIG.music && window.SITE_CONFIG.music[cur.key] === path) {
+          const mbtn = document.querySelector("#music-btn");
+          const audio = document.querySelector("#music-audio");
+          audio.src = URL.createObjectURL(f);
+          mbtn.classList.remove("hidden");
+        } else if (typeof initMusic === "function") {
+          initMusic();
+        }
       } catch (err) {
         log(`✗ ${err.message}`, "err");
       }
