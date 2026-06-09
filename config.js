@@ -57,6 +57,13 @@ window.SITE_CONFIG = {
   // 不想自动播放就改成 false。
   musicAutoplay: true,
 
+  // ---------- 同步歌词（.lrc，随歌曲浮动显示）----------
+  // 在后台「歌词」处上传 .lrc 文件即可；按身份各一份。
+  lyrics: {
+    hui: "assets/lyrics-hui.lrc",
+    zhen: "assets/lyrics-zhen.lrc",
+  },
+
   // ---------- 浪漫主题（7 套，按星期每天自动轮换，也可手动选）----------
   themes: [
     { key: "rosegold", zh: "玫瑰金",   vi: "Vàng hồng",     swatch: ["#e8a0b0", "#e7c9a9"] },

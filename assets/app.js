@@ -655,9 +655,66 @@ function initMusic() {
     else { audio.pause(); musicUserPaused = true; } // 用户手动暂停后不再自动续播
   };
   audio.onplay = () => { musicUserPaused = false; disc.classList.add("playing"); };
-  audio.onpause = () => disc.classList.remove("playing");
+  audio.onpause = () => { disc.classList.remove("playing"); hideLyric(); };
+  audio.ontimeupdate = updateLyric;
+  loadLyrics(); // 载入该身份的同步歌词
 
   if (CFG.musicAutoplay !== false) armMusicAutoplay();
+}
+
+/* ============================================================
+ *  浮动同步歌词（LRC，随当前歌曲滚动显示）
+ * ============================================================ */
+let lrc = [], lrcIdx = -1;
+
+// 解析 LRC：支持 [mm:ss]、[mm:ss.xx]、[mm:ss:xx]，并跳过制作信息行
+function parseLrc(text) {
+  const out = [];
+  const re = /\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?\]/g;
+  text.split(/\r?\n/).forEach((line) => {
+    const body = line.replace(re, "").trim();
+    if (!body || body.includes("：") || body.includes("@")) return; // 跳过词/曲/制作等信息
+    let m; re.lastIndex = 0;
+    while ((m = re.exec(line))) {
+      const f = m[3] ? (m[3].length === 3 ? +m[3] / 1000 : +m[3] / 100) : 0;
+      out.push({ t: +m[1] * 60 + +m[2] + f, text: body });
+    }
+  });
+  return out.sort((a, b) => a.t - b.t);
+}
+
+function loadLyrics() {
+  lrc = []; lrcIdx = -1; hideLyric();
+  const v = currentViewer();
+  const url = v && CFG.lyrics ? CFG.lyrics[v.key] : "";
+  if (!url) return;
+  fetch(url + "?v=" + Date.now(), { cache: "no-store" })
+    .then((r) => (r.ok ? r.text() : Promise.reject()))
+    .then((txt) => { lrc = parseLrc(txt); })
+    .catch(() => { lrc = []; });
+}
+
+function updateLyric() {
+  const audio = $("#music-audio");
+  if (!lrc.length || audio.paused) { hideLyric(); return; }
+  const ct = audio.currentTime;
+  let i = -1;
+  for (let k = 0; k < lrc.length; k++) { if (lrc[k].t <= ct + 0.2) i = k; else break; }
+  if (i < 0) { hideLyric(); return; }
+  if (i !== lrcIdx) { lrcIdx = i; showLyric(lrc[i].text); }
+}
+
+function showLyric(text) {
+  const el = $("#lyrics");
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove("hidden");
+  requestAnimationFrame(() => el.classList.add("show"));
+}
+function hideLyric() {
+  const el = $("#lyrics");
+  if (el) el.classList.remove("show");
+  lrcIdx = -1;
 }
 
 // 进站后用户第一次交互即自动起播（满足浏览器自动播放策略）

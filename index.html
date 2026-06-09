@@ -98,6 +98,9 @@
   <button id="music-btn" class="music-btn hidden" title="背景音乐"><span class="music-disc" data-icon="music"></span></button>
   <audio id="music-audio" loop></audio>
 
+  <!-- ░░ 浮动同步歌词 ░░ -->
+  <div id="lyrics" class="lyrics-float hidden" aria-hidden="true"></div>
+
   <!-- ░░ 主题面板 ░░ -->
   <div id="theme-panel" class="theme-panel">
     <h4 data-i18n="themeTitle">浪漫主题</h4>
@@ -163,6 +166,8 @@
         <div id="admin-grid" class="admin-grid"></div>
         <p class="admin-hint" style="margin-top:16px" data-i18n="admMusicTitle">背景音乐（点按钮上传 / 更换）</p>
         <div id="music-admin" class="music-admin"></div>
+        <p class="admin-hint" style="margin-top:14px" data-i18n="admLyricsTitle">同步歌词（上传 .lrc 文件）</p>
+        <div id="lyrics-admin" class="music-admin"></div>
         <button id="token-forget" class="btn ghost" style="margin-top:16px" data-i18n="admForget">退出 / 清除令牌</button>
       </div>
     </div>

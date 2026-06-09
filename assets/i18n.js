@@ -61,6 +61,9 @@ const I18N = {
     admOrderHint: "拖动照片左下角的 ⠿ 手柄即可调整顺序",
     admSaveOrder: "保存顺序",
     admOrderSaved: "✓ 顺序已保存",
+    admLyricsTitle: "同步歌词（上传 .lrc 文件）",
+    admLyricsFor: (n) => `📜 ${n} 的歌词`,
+    admLyricsOk: "✓ 已更新歌词：",
   },
 
   vi: {
@@ -118,6 +121,9 @@ const I18N = {
     admOrderHint: "Kéo tay cầm ⠿ ở góc dưới trái của ảnh để sắp xếp",
     admSaveOrder: "Lưu thứ tự",
     admOrderSaved: "✓ Đã lưu thứ tự",
+    admLyricsTitle: "Lời bài hát đồng bộ (tải tệp .lrc)",
+    admLyricsFor: (n) => `📜 Lời của ${n}`,
+    admLyricsOk: "✓ Đã cập nhật lời: ",
   },
 };
 

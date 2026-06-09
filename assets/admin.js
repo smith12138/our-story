@@ -40,6 +40,48 @@
     show("#admin-panel");
     renderAdminGrid();
     buildMusicAdmin();
+    buildLyricsAdmin();
+  }
+
+  /* ---------- 同步歌词上传 ---------- */
+  function buildLyricsAdmin() {
+    const box = el("#lyrics-admin");
+    if (!box) return;
+    box.innerHTML = "";
+    const viewers = window.SITE_CONFIG.viewers || [];
+    const lyr = window.SITE_CONFIG.lyrics || {};
+    viewers.forEach((v) => {
+      const path = lyr[v.key];
+      if (!path) return;
+      const btn = document.createElement("button");
+      btn.className = "btn";
+      btn.textContent = t("admLyricsFor")(v.short || v.name);
+      btn.addEventListener("click", () => uploadLyrics(path));
+      box.appendChild(btn);
+    });
+  }
+
+  function uploadLyrics(path) {
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = ".lrc,text/plain";
+    inp.onchange = async () => {
+      const f = inp.files && inp.files[0];
+      if (!f) return;
+      try {
+        log("上传歌词 " + f.name + " …");
+        const b64 = await readAsB64(f);
+        let sha;
+        const meta = await fetch(api(path), { headers: ghHeaders() }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+        if (meta && meta.sha) sha = meta.sha;
+        await ghPut(path, b64, `chore: update lyrics ${path}`, sha);
+        log(t("admLyricsOk") + path, "ok");
+        if (typeof loadLyrics === "function") loadLyrics(); // 立即重载，正在播放即可看到
+      } catch (err) {
+        log(`✗ ${err.message}`, "err");
+      }
+    };
+    inp.click();
   }
 
   /* ---------- 背景音乐上传 / 更换 ---------- */

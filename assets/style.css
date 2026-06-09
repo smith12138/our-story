@@ -277,6 +277,18 @@ body {
 .admin-thumb.dragging { opacity: .6; transform: scale(.92); outline: 2px solid var(--rose); z-index: 5; }
 #save-order { animation: rise .25s ease both; }
 
+/* ---------- floating synced lyrics ---------- */
+.lyrics-float {
+  position: fixed; left: 50%; bottom: 88px; transform: translateX(-50%) translateY(10px);
+  z-index: 38; max-width: 90vw; text-align: center; pointer-events: none;
+  font-family: var(--serif); font-style: italic; line-height: 1.4;
+  font-size: clamp(18px, 3vw, 28px); color: var(--cream);
+  text-shadow: 0 2px 14px rgba(0,0,0,.75), 0 0 24px var(--rose);
+  opacity: 0; transition: opacity .5s ease, transform .5s ease; padding: 6px 18px;
+}
+.lyrics-float.show { opacity: .96; transform: translateX(-50%) translateY(0); }
+@media (max-width: 640px) { .lyrics-float { bottom: 78px; } }
+
 /* ---------- floating hearts (click burst) ---------- */
 .fheart { position: fixed; z-index: 95; pointer-events: none; font-size: 22px; animation: floatHeart 1.1s ease-out forwards; }
 @keyframes floatHeart {
