@@ -516,7 +516,7 @@ function startLoveQuote() {
 /* ============================================================
  *  幻灯片轮播
  * ============================================================ */
-let ssList = [], ssIdx = 0, ssTimer = null, ssActive = "a", ssPlaying = true;
+let ssList = [], ssIdx = 0, ssTimer = null, ssActive = "a", ssPlaying = true, ssHover = false;
 const SS_INTERVAL = 6000;
 
 function shuffle(a) {
@@ -542,7 +542,8 @@ function startSlideshow() {
 
 function scheduleSlide() {
   clearTimeout(ssTimer);
-  if (ssPlaying) ssTimer = setTimeout(() => nextSlide(1), SS_INTERVAL);
+  // 悬停时不自动切换（手动点击后也不会立刻被自动切走）
+  if (ssPlaying && !ssHover) ssTimer = setTimeout(() => nextSlide(1), SS_INTERVAL);
 }
 
 function showSlide(idx, instant) {
@@ -588,8 +589,8 @@ $("#ss-play").addEventListener("click", () => {
   $("#ss-play").innerHTML = ssPlaying ? icon("pause") : icon("play");
   scheduleSlide();
 });
-$(".ss-stage").addEventListener("mouseenter", () => { clearTimeout(ssTimer); });
-$(".ss-stage").addEventListener("mouseleave", () => scheduleSlide());
+$(".ss-stage").addEventListener("mouseenter", () => { ssHover = true; clearTimeout(ssTimer); });
+$(".ss-stage").addEventListener("mouseleave", () => { ssHover = false; scheduleSlide(); });
 
 /* ============================================================
  *  点击爱心绽放
