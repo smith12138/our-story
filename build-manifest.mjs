@@ -1,33 +1,33 @@
 #!/usr/bin/env node
 // Scans photos/ and writes photos.json (the gallery manifest).
+//   - generates any missing thumbnails into thumbs/ (needs ImageMagick `magick`)
+//   - records each photo's pixel size (w/h) so the gallery can reserve space
+//   - PRESERVES existing display order (manual drag-reorder survives rebuilds);
+//     brand-new files are added at the front (newest first)
 // Run with: node build-manifest.mjs
-// The website's admin panel updates photos.json automatically when you
-// add/delete photos in the browser — you only need this script if you ever
-// drop files into photos/ manually and want to regenerate the list.
+// The website's admin panel updates photos.json automatically; you only need
+// this if you ever drop files into photos/ by hand.
 
-import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { execSync } from "node:child_process";
 
 const PHOTOS_DIR = "photos";
+const THUMBS_DIR = "thumbs";
 const OUT = "photos.json";
-const PLACES = "places.json"; // 文件名 -> { city, country }（由带 GPS 的照片反查得到）
+const PLACES = "places.json";
 const IMG_RE = /\.(jpe?g|png|webp|gif)$/i;
 
 const places = existsSync(PLACES) ? JSON.parse(readFileSync(PLACES, "utf8")) : {};
 
-// 保留上一次清单里手动标注的地点（后台标注只写进 photos.json）
-const prevPlace = {};
+// 上一次清单：保留顺序 + 手动标注的地点
+let prev = [];
 if (existsSync(OUT)) {
-  try {
-    for (const p of JSON.parse(readFileSync(OUT, "utf8")).photos || []) {
-      if (p.place) prevPlace[p.file] = p.place;
-    }
-  } catch {}
+  try { prev = JSON.parse(readFileSync(OUT, "utf8")).photos || []; } catch {}
 }
+const prevPlace = {};
+prev.forEach((p) => { if (p.place) prevPlace[p.file] = p.place; });
+const prevOrder = prev.map((p) => p.file);
 
-// Pull a sortable timestamp out of common phone filenames, e.g.
-//   IMG20250128173052.jpg      -> 2025-01-28 17:30:52
-//   IMG_20250320_131906.jpg    -> 2025-03-20 13:19:06
-//   beauty_20260215210638.jpg  -> 2026-02-15 21:06:38
 function parseDate(name) {
   const digits = name.replace(/\D/g, "");
   const m = digits.match(/(20\d{2})(\d{2})(\d{2})(\d{2})?(\d{2})?(\d{2})?/);
@@ -37,30 +37,47 @@ function parseDate(name) {
   return `${y}-${mo}-${d}T${h}:${mi}:${s}`;
 }
 
+function thumbAndSize(file) {
+  const src = `${PHOTOS_DIR}/${file}`;
+  const dst = `${THUMBS_DIR}/${file}`;
+  try {
+    if (!existsSync(dst)) {
+      execSync(`magick ${JSON.stringify(src)} -auto-orient -resize '640x640>' -quality 80 -strip ${JSON.stringify(dst)}`);
+    }
+    const out = execSync(`magick identify -format "%w %h" ${JSON.stringify(dst)}`).toString().trim();
+    const [w, h] = out.split(" ").map(Number);
+    if (w && h) return { w, h };
+  } catch {}
+  return {};
+}
+
 if (!existsSync(PHOTOS_DIR)) {
   console.error(`No ${PHOTOS_DIR}/ directory found.`);
   process.exit(1);
 }
+if (!existsSync(THUMBS_DIR)) mkdirSync(THUMBS_DIR);
 
 const files = readdirSync(PHOTOS_DIR).filter((f) => IMG_RE.test(f));
 
-const photos = files
-  .map((file) => {
-    const p = { file, date: parseDate(file) };
-    // 优先用 GPS 反查的 places.json，其次保留后台手动标注
-    const loc = places[file] || prevPlace[file];
-    if (loc && (loc.region || loc.country)) {
-      p.place = { country: loc.country || "", region: loc.region || loc.city || "" };
-    }
-    return p;
-  })
-  .sort((a, b) => {
-    // Newest first; files without a parsed date sink to the bottom.
-    if (a.date && b.date) return b.date.localeCompare(a.date);
-    if (a.date) return -1;
-    if (b.date) return 1;
-    return a.file.localeCompare(b.file);
-  });
+// 顺序：已存在的按上次顺序；新文件按日期从新到旧排在最前面
+const known = files.filter((f) => prevOrder.includes(f)).sort(
+  (a, b) => prevOrder.indexOf(a) - prevOrder.indexOf(b)
+);
+const fresh = files.filter((f) => !prevOrder.includes(f)).sort((a, b) =>
+  (parseDate(b) || "").localeCompare(parseDate(a) || "")
+);
+const ordered = [...fresh, ...known];
+
+const photos = ordered.map((file) => {
+  const p = { file, date: parseDate(file) };
+  const loc = places[file] || prevPlace[file];
+  if (loc && (loc.region || loc.country)) {
+    p.place = { country: loc.country || "", region: loc.region || loc.city || "" };
+  }
+  const { w, h } = thumbAndSize(file);
+  if (w && h) { p.w = w; p.h = h; }
+  return p;
+});
 
 writeFileSync(OUT, JSON.stringify({ photos }, null, 2) + "\n");
-console.log(`Wrote ${OUT} with ${photos.length} photos.`);
+console.log(`Wrote ${OUT} with ${photos.length} photos (thumbnails in ${THUMBS_DIR}/).`);

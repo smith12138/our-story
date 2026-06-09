@@ -22,6 +22,8 @@ const ICONS = {
   pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
   replace: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
+  grip: '<circle cx="9" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1.4" fill="currentColor" stroke="none"/>',
+  save: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/>',
 };
 function icon(name) {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ""}</svg>`;
@@ -370,10 +372,17 @@ function renderGallery() {
   window.VISIBLE.forEach((p, i) => {
     const card = document.createElement("div");
     card.className = "card";
+    const enc = encodeURIComponent(p.file);
     const place = placeShort(p) ? ` · 📍${placeShort(p)}` : "";
     card.innerHTML = `
-      <img src="photos/${encodeURIComponent(p.file)}" alt="" loading="lazy" decoding="async" />
+      <img alt="" loading="lazy" decoding="async" />
       <span class="date">${fmtDate(p.date)}${place}</span>`;
+    const im = card.querySelector("img");
+    // 用 w/h 预留位置，避免加载时跳动
+    if (p.w && p.h) im.style.aspectRatio = `${p.w} / ${p.h}`;
+    im.src = "thumbs/" + enc;
+    // 没有缩略图就回退到原图
+    im.addEventListener("error", () => { im.src = "photos/" + enc; }, { once: true });
     card.addEventListener("click", () => openLightbox(i));
     g.appendChild(card);
   });

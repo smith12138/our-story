@@ -175,7 +175,7 @@
   const utf8ToB64 = (s) => btoa(unescape(encodeURIComponent(s)));
 
   async function putManifest(photos) {
-    photos.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    // 不再自动按日期排序：数组顺序 = 显示顺序（支持手动拖动排序）
     const cur = await ghGetJson("photos.json").catch(() => ({ sha: undefined }));
     const content = utf8ToB64(JSON.stringify({ photos }, null, 2) + "\n");
     await ghPut("photos.json", content, "chore: update photo manifest", cur.sha);
@@ -204,10 +204,30 @@
     });
   }
 
+  // 浏览器内生成缩略图（最长边 640），返回 { b64, w, h }（w/h 为原图尺寸）
+  function makeThumb(file) {
+    return new Promise((res, rej) => {
+      const img = new Image();
+      img.onload = () => {
+        const W = img.naturalWidth, H = img.naturalHeight;
+        const scale = Math.min(1, 640 / Math.max(W, H));
+        const tw = Math.round(W * scale), th = Math.round(H * scale);
+        const c = document.createElement("canvas");
+        c.width = tw; c.height = th;
+        c.getContext("2d").drawImage(img, 0, 0, tw, th);
+        const b64 = c.toDataURL("image/jpeg", 0.8).split(",")[1];
+        URL.revokeObjectURL(img.src);
+        res({ b64, w: W, h: H });
+      };
+      img.onerror = rej;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
   async function handleFiles(files) {
     const list = [...files].filter((f) => /^image\//.test(f.type));
     if (!list.length) return;
-    let photos = [...window.PHOTOS];
+    const added = [];
     for (const f of list) {
       try {
         const ext = (f.name.match(/\.[a-z0-9]+$/i) || [".jpg"])[0].toLowerCase();
@@ -216,14 +236,21 @@
         log(`上传 ${f.name} …`);
         const b64 = await readAsB64(f);
         await ghPut("photos/" + name, b64, `feat: add photo ${name}`);
-        photos.push({ file: name, date: stamp.toISOString().slice(0, 19) });
+        // 生成并上传缩略图（失败也不影响，前端会回退到原图）
+        const entry = { file: name, date: stamp.toISOString().slice(0, 19) };
+        try {
+          const th = await makeThumb(f);
+          await ghPut("thumbs/" + name, th.b64, `chore: thumb ${name}`);
+          entry.w = th.w; entry.h = th.h;
+        } catch {}
+        added.unshift(entry); // 新照片排到最前
         log(`✓ ${f.name} 已上传`, "ok");
       } catch (err) {
         log(`✗ ${f.name}: ${err.message}`, "err");
       }
     }
     try {
-      await putManifest(photos);
+      await putManifest([...added, ...window.PHOTOS]);
       renderAdminGrid();
       log("相册已更新（部署约 1 分钟后在线上生效）", "ok");
     } catch (err) {
@@ -239,6 +266,11 @@
       // 取该文件 sha
       const meta = await fetch(api("photos/" + encodeURIComponent(file)), { headers: ghHeaders() }).then((r) => r.json());
       await ghDelete("photos/" + encodeURIComponent(file), meta.sha, `chore: remove photo ${file}`);
+      // 顺手删掉缩略图（存在才删）
+      try {
+        const tm = await fetch(api("thumbs/" + encodeURIComponent(file)), { headers: ghHeaders() }).then((r) => (r.ok ? r.json() : null));
+        if (tm && tm.sha) await ghDelete("thumbs/" + encodeURIComponent(file), tm.sha, `chore: remove thumb ${file}`);
+      } catch {}
       const photos = window.PHOTOS.filter((p) => p.file !== file);
       await putManifest(photos);
       renderAdminGrid();
@@ -253,19 +285,77 @@
     const grid = el("#admin-grid");
     grid.innerHTML = "";
     window.PHOTOS.forEach((p) => {
+      const enc = encodeURIComponent(p.file);
       const d = document.createElement("div");
       d.className = "admin-thumb";
+      d.dataset.file = p.file;
       const tag = p.place ? `<span class="tag">📍${p.place.region || p.place.country || ""}</span>` : "";
-      d.innerHTML = `<img src="photos/${encodeURIComponent(p.file)}" loading="lazy" decoding="async" alt="" />
+      d.innerHTML = `<img loading="lazy" decoding="async" alt="" />
+        <button class="grip" title="拖动排序">${icon("grip")}</button>
         <button class="edit-place" title="标注地点">${icon("pin")}</button>
         <button class="del" title="删除">${icon("trash")}</button>
         <button class="replace" title="更换">${icon("replace")}</button>${tag}`;
+      const im = d.querySelector("img");
+      im.src = "thumbs/" + enc;
+      im.addEventListener("error", () => { im.src = "photos/" + enc; }, { once: true });
       d.querySelector(".del").addEventListener("click", () => deletePhoto(p.file));
       d.querySelector(".edit-place").addEventListener("click", () => openPlaceModal(p.file));
       d.querySelector(".replace").addEventListener("click", () => replacePhoto(p.file));
       grid.appendChild(d);
     });
+    enableSort(grid);
   }
+
+  /* ---------- 拖动排序（手柄 ⠿，支持鼠标 + 触屏）---------- */
+  function enableSort(grid) {
+    grid.querySelectorAll(".admin-thumb").forEach((el2) => {
+      const grip = el2.querySelector(".grip");
+      if (!grip) return;
+      grip.addEventListener("pointerdown", (e) => {
+        e.preventDefault();
+        let moved = false;
+        const sx = e.clientX, sy = e.clientY;
+        grip.setPointerCapture(e.pointerId);
+        const onMove = (ev) => {
+          if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 6) return;
+          moved = true;
+          el2.classList.add("dragging");
+          const over = document.elementFromPoint(ev.clientX, ev.clientY)?.closest(".admin-thumb");
+          if (over && over !== el2 && over.parentNode === grid) {
+            const r = over.getBoundingClientRect();
+            const after = (ev.clientX - r.left) > r.width / 2;
+            grid.insertBefore(el2, after ? over.nextSibling : over);
+          }
+        };
+        const onUp = () => {
+          grip.removeEventListener("pointermove", onMove);
+          grip.removeEventListener("pointerup", onUp);
+          el2.classList.remove("dragging");
+          if (moved) {
+            const order = [...grid.children].map((c) => c.dataset.file);
+            window.PHOTOS = order.map((f) => window.PHOTOS.find((p) => p.file === f)).filter(Boolean);
+            el("#save-order").classList.remove("hidden");
+            if (window.renderGallery) window.renderGallery();
+          }
+        };
+        grip.addEventListener("pointermove", onMove);
+        grip.addEventListener("pointerup", onUp);
+      });
+    });
+  }
+
+  el("#save-order").addEventListener("click", async () => {
+    el("#save-order").textContent = t("placeSaving");
+    try {
+      await putManifest([...window.PHOTOS]);
+      el("#save-order").classList.add("hidden");
+      el("#save-order").textContent = t("admSaveOrder");
+      log(t("admOrderSaved"), "ok");
+    } catch (err) {
+      el("#save-order").textContent = t("admSaveOrder");
+      log("✗ " + err.message, "err");
+    }
+  });
 
   /* ---------- 更换 / 更新照片（保持文件名与位置不变）---------- */
   async function replacePhoto(file) {
@@ -280,9 +370,19 @@
         const meta = await fetch(api("photos/" + encodeURIComponent(file)), { headers: ghHeaders() }).then((r) => r.json());
         const b64 = await readAsB64(f);
         await ghPut("photos/" + encodeURIComponent(file), b64, `chore: replace photo ${file}`, meta.sha);
+        // 同步重建缩略图 + 更新尺寸
+        try {
+          const th = await makeThumb(f);
+          const tm = await fetch(api("thumbs/" + encodeURIComponent(file)), { headers: ghHeaders() }).then((r) => (r.ok ? r.json() : null));
+          await ghPut("thumbs/" + encodeURIComponent(file), th.b64, `chore: rethumb ${file}`, tm && tm.sha);
+          const photos = window.PHOTOS.map((p) => (p.file === file ? { ...p, w: th.w, h: th.h } : p));
+          await putManifest(photos);
+        } catch {}
         // 刷新本会话里这张图（同名文件需绕过缓存）
-        const bust = "photos/" + encodeURIComponent(file);
-        document.querySelectorAll(`img[src^="${bust}"]`).forEach((im) => { im.src = bust + "?v=" + Date.now(); });
+        const v = "?v=" + Date.now();
+        document.querySelectorAll(`img[src^="photos/${encodeURIComponent(file)}"], img[src^="thumbs/${encodeURIComponent(file)}"]`)
+          .forEach((im) => { im.src = im.src.split("?")[0] + v; });
+        renderAdminGrid();
         log(t("admReplaceOk") + file, "ok");
       } catch (err) {
         log(`✗ ${err.message}`, "err");

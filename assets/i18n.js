@@ -58,6 +58,9 @@ const I18N = {
     admMusicFor: (n) => `🎵 ${n} 的歌`,
     admMusicUploading: "歌曲上传中…",
     admMusicOk: "✓ 已更新歌曲：",
+    admOrderHint: "拖动照片左下角的 ⠿ 手柄即可调整顺序",
+    admSaveOrder: "保存顺序",
+    admOrderSaved: "✓ 顺序已保存",
   },
 
   vi: {
@@ -112,6 +115,9 @@ const I18N = {
     admMusicFor: (n) => `🎵 Nhạc của ${n}`,
     admMusicUploading: "Đang tải nhạc…",
     admMusicOk: "✓ Đã cập nhật nhạc: ",
+    admOrderHint: "Kéo tay cầm ⠿ ở góc dưới trái của ảnh để sắp xếp",
+    admSaveOrder: "Lưu thứ tự",
+    admOrderSaved: "✓ Đã lưu thứ tự",
   },
 };
 
