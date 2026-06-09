@@ -472,8 +472,7 @@ function askIdentity() {
     const el = document.createElement("div");
     el.className = "id-pick";
     el.innerHTML = `<div class="id-emoji">${v.emoji}</div>
-      <div class="id-short">${v.short}</div>
-      <div class="id-name">${v.name}</div>`;
+      <div class="id-short">${v.short}</div>`;
     el.addEventListener("click", () => {
       localStorage.setItem(VIEWER_KEY, v.key);
       $("#identity").classList.add("hidden");
