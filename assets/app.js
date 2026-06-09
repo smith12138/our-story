@@ -486,6 +486,7 @@ function askIdentity() {
 /* ============================================================
  *  每日情话（打字机）
  * ============================================================ */
+let loveTimer = null;
 function startLoveQuote() {
   const quotes = (window.LANG === "vi" ? CFG.loveQuotesVi : CFG.loveQuotes) || CFG.loveQuotes || [];
   if (!quotes.length) return;
@@ -494,13 +495,14 @@ function startLoveQuote() {
   const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
   const text = quotes[dayOfYear % quotes.length];
   const el = $("#love-quote");
+  clearTimeout(loveTimer); // 取消上一次打字机，避免重复调用时多个计时器叠加导致闪烁
   el.textContent = "";
   el.classList.remove("done");
   let i = 0;
   (function type() {
     if (i <= text.length) {
       el.textContent = text.slice(0, i++);
-      setTimeout(type, 110);
+      loveTimer = setTimeout(type, 110);
     } else {
       el.classList.add("done");
     }
