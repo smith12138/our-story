@@ -306,34 +306,57 @@
     enableSort(grid);
   }
 
-  /* ---------- 拖动排序（手柄 ⠿，支持鼠标 + 触屏）---------- */
+  /* ---------- 拖动排序（手柄 ⠿，支持鼠标 + 触屏；拖到上/下边缘自动滚动）---------- */
   // 关键：在 document 上监听 move/up，而不是在被拖动的元素上——
   // 因为 insertBefore 会移动该元素并释放它的指针捕获，导致拖动中断。
   function enableSort(grid) {
+    const scroller = grid.closest(".admin-card") || grid.parentElement;
     grid.querySelectorAll(".admin-thumb .grip").forEach((grip) => {
       grip.addEventListener("pointerdown", (e) => {
         e.preventDefault();
         const el2 = grip.closest(".admin-thumb");
         const sx = e.clientX, sy = e.clientY;
-        let moved = false;
+        let moved = false, curX = e.clientX, curY = e.clientY, raf = 0;
 
-        const onMove = (ev) => {
-          if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 6) return;
-          moved = true;
-          el2.classList.add("dragging");
-          const node = document.elementFromPoint(ev.clientX, ev.clientY);
+        // 根据当前指针位置把被拖的图片插到合适位置
+        const reorderAt = (x, y) => {
+          const node = document.elementFromPoint(x, y);
           const over = node && node.closest(".admin-thumb");
           if (over && over !== el2 && over.parentNode === grid) {
             const r = over.getBoundingClientRect();
-            // 读序判断插到目标前还是后（右半 / 下半 => 之后）
-            const after = ev.clientY > r.top + r.height / 2 || ev.clientX > r.left + r.width / 2;
+            const after = y > r.top + r.height / 2 || x > r.left + r.width / 2;
             grid.insertBefore(el2, after ? over.nextSibling : over);
           }
+        };
+
+        // 指针靠近窗口上/下边缘时持续滚动
+        const EDGE = 80, MAX = 16;
+        const tick = () => {
+          raf = requestAnimationFrame(tick);
+          if (!moved) return;
+          const r = scroller.getBoundingClientRect();
+          let dy = 0;
+          if (curY < r.top + EDGE) dy = -Math.ceil(((r.top + EDGE - curY) / EDGE) * MAX);
+          else if (curY > r.bottom - EDGE) dy = Math.ceil(((curY - (r.bottom - EDGE)) / EDGE) * MAX);
+          if (dy) {
+            const before = scroller.scrollTop;
+            scroller.scrollTop += dy;
+            if (scroller.scrollTop !== before) reorderAt(curX, curY);
+          }
+        };
+
+        const onMove = (ev) => {
+          curX = ev.clientX; curY = ev.clientY;
+          if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 6) return;
+          moved = true;
+          el2.classList.add("dragging");
+          reorderAt(ev.clientX, ev.clientY);
         };
         const onUp = () => {
           document.removeEventListener("pointermove", onMove);
           document.removeEventListener("pointerup", onUp);
           document.removeEventListener("pointercancel", onUp);
+          cancelAnimationFrame(raf);
           el2.classList.remove("dragging");
           if (moved) {
             const order = [...grid.children].map((c) => c.dataset.file);
@@ -345,6 +368,7 @@
         document.addEventListener("pointermove", onMove);
         document.addEventListener("pointerup", onUp);
         document.addEventListener("pointercancel", onUp);
+        raf = requestAnimationFrame(tick);
       });
     });
   }

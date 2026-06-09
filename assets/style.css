@@ -388,7 +388,7 @@ body {
   animation: fade .3s ease;
 }
 .admin-card {
-  position: relative; width: 100%; max-width: 620px; max-height: 88vh; overflow-y: auto;
+  position: relative; width: 100%; max-width: 960px; max-height: 92vh; overflow-y: auto;
   background: var(--bg-soft); border: 1px solid rgba(232,160,176,.25);
   border-radius: 22px; padding: 34px; box-shadow: var(--shadow);
 }
@@ -405,10 +405,10 @@ body {
 .upload-zone.drag, .upload-zone:hover { border-color: var(--rose); color: var(--rose); background: rgba(232,160,176,.06); }
 .admin-log { font-size: 13px; color: var(--muted); white-space: pre-wrap; max-height: 120px; overflow-y: auto; }
 .admin-log .ok { color: #9be0a8; } .admin-log .err { color: #ff9aa9; }
-.admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin: 14px 0; }
+.admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin: 14px 0; }
 .admin-thumb {
   position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 1; background: #000;
-  content-visibility: auto; contain-intrinsic-size: 96px; /* 离屏不渲染，滚动更顺 */
+  content-visibility: auto; contain-intrinsic-size: 150px; /* 离屏不渲染，滚动更顺 */
 }
 .admin-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .admin-thumb button {
