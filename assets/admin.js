@@ -307,29 +307,33 @@
   }
 
   /* ---------- 拖动排序（手柄 ⠿，支持鼠标 + 触屏）---------- */
+  // 关键：在 document 上监听 move/up，而不是在被拖动的元素上——
+  // 因为 insertBefore 会移动该元素并释放它的指针捕获，导致拖动中断。
   function enableSort(grid) {
-    grid.querySelectorAll(".admin-thumb").forEach((el2) => {
-      const grip = el2.querySelector(".grip");
-      if (!grip) return;
+    grid.querySelectorAll(".admin-thumb .grip").forEach((grip) => {
       grip.addEventListener("pointerdown", (e) => {
         e.preventDefault();
-        let moved = false;
+        const el2 = grip.closest(".admin-thumb");
         const sx = e.clientX, sy = e.clientY;
-        grip.setPointerCapture(e.pointerId);
+        let moved = false;
+
         const onMove = (ev) => {
           if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 6) return;
           moved = true;
           el2.classList.add("dragging");
-          const over = document.elementFromPoint(ev.clientX, ev.clientY)?.closest(".admin-thumb");
+          const node = document.elementFromPoint(ev.clientX, ev.clientY);
+          const over = node && node.closest(".admin-thumb");
           if (over && over !== el2 && over.parentNode === grid) {
             const r = over.getBoundingClientRect();
-            const after = (ev.clientX - r.left) > r.width / 2;
+            // 读序判断插到目标前还是后（右半 / 下半 => 之后）
+            const after = ev.clientY > r.top + r.height / 2 || ev.clientX > r.left + r.width / 2;
             grid.insertBefore(el2, after ? over.nextSibling : over);
           }
         };
         const onUp = () => {
-          grip.removeEventListener("pointermove", onMove);
-          grip.removeEventListener("pointerup", onUp);
+          document.removeEventListener("pointermove", onMove);
+          document.removeEventListener("pointerup", onUp);
+          document.removeEventListener("pointercancel", onUp);
           el2.classList.remove("dragging");
           if (moved) {
             const order = [...grid.children].map((c) => c.dataset.file);
@@ -338,8 +342,9 @@
             if (window.renderGallery) window.renderGallery();
           }
         };
-        grip.addEventListener("pointermove", onMove);
-        grip.addEventListener("pointerup", onUp);
+        document.addEventListener("pointermove", onMove);
+        document.addEventListener("pointerup", onUp);
+        document.addEventListener("pointercancel", onUp);
       });
     });
   }
