@@ -36,21 +36,51 @@ $("#gate-form").addEventListener("submit", async (e) => {
     sessionStorage.setItem(GATE_KEY, "1");
     unlock();
   } else {
-    $("#gate-error").textContent = "密码不对哦，再试试 💔";
+    $("#gate-error").textContent = t("gateErr");
     $("#gate-input").value = "";
   }
 });
 
+// 初始按上次记忆的语言渲染密码门
+window.LANG = localStorage.getItem("ourstory_lang") || "zh";
+applyLang();
+
 if (sessionStorage.getItem(GATE_KEY) === "1") unlock();
+
+/* ---------- 多语言 ---------- */
+function setLang(l) {
+  window.LANG = l === "vi" ? "vi" : "zh";
+  localStorage.setItem("ourstory_lang", window.LANG);
+  applyLang();
+}
+
+// 把所有带 data-i18n / data-i18n-ph 的元素按当前语言更新
+function applyLang() {
+  document.documentElement.lang = window.LANG === "vi" ? "vi" : "zh-CN";
+  $$("[data-i18n]").forEach((el) => { el.innerHTML = t(el.dataset.i18n); });
+  $$("[data-i18n-ph]").forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
+
+  // 首页标题 / 副标题（来自 config 的对应语言）
+  $("#hero-title").textContent = window.LANG === "vi" ? (CFG.titleVi || CFG.title) : CFG.title;
+  $("#hero-sub").textContent = window.LANG === "vi" ? (CFG.subtitleVi || CFG.subtitle) : CFG.subtitle;
+
+  // 已经进入相册时，刷新动态内容
+  if (!$("#app").classList.contains("hidden")) {
+    startCounter();
+    startLoveQuote();
+    if (window.PHOTOS.length) renderGallery();
+    refreshSlideCaption();
+  }
+}
 
 /* ---------- 站点内容 ---------- */
 function initSite() {
-  $("#hero-title").textContent = CFG.title;
-  $("#hero-sub").textContent = CFG.subtitle;
+  // 进入时按身份决定语言（其次用上次记忆）
+  const v = currentViewer();
+  window.LANG = v ? (v.lang || "zh") : (localStorage.getItem("ourstory_lang") || "zh");
   if (CFG.names) $("#footer-names").textContent = CFG.names;
+  applyLang();
   startPetals();
-  startCounter();
-  startLoveQuote();
   initMusic();
   initClickHearts();
   loadGallery();
@@ -77,7 +107,7 @@ function startCounter() {
     const start = new Date(CFG.anniversary);
     if (!isNaN(start)) {
       const days = Math.floor((midnight(new Date()) - midnight(start)) / 86400000);
-      if (days >= 0) lines.push(`结婚已经 <b>${days}</b> 天 · 还有一辈子要走 ♾`);
+      if (days >= 0) lines.push(t("married")(days));
     }
   }
 
@@ -91,9 +121,9 @@ function startCounter() {
     if (left === null) return;
     if (left === 0) {
       birthdayToday = p;
-      lines.push(`🎂 今天是 <b>${p.name}</b> 的生日 · 生日快乐！`);
+      lines.push(t("bdayToday")(p.name));
     } else if (left <= within) {
-      lines.push(`🎈 距离 <b>${p.name}</b> 的生日还有 <b>${left}</b> 天`);
+      lines.push(t("bdaySoon")(p.name, left));
     }
   });
 
@@ -177,17 +207,24 @@ const UNTAGGED = "__untagged__";
 let activeFilter = ALL;
 window.VISIBLE = []; // 当前筛选下可见的照片（灯箱也用它翻页）
 
-// 地点完整标签：「国家 · 地区」
-function placeLabel(p) {
+// 与语言无关的地点键（用于筛选，始终用原始文字）
+function placeKey(p) {
   if (!p.place) return null;
   const { country, region } = p.place;
   const s = [country, region].filter(Boolean).join(" · ");
   return s || null;
 }
-// 卡片上的短标签（优先地区）
+// 地点完整标签（按当前语言翻译显示）
+function placeLabel(p) {
+  if (!p.place) return null;
+  const { country, region } = p.place;
+  const s = [translatePlace(country), translatePlace(region)].filter(Boolean).join(" · ");
+  return s || null;
+}
+// 卡片上的短标签（优先地区，按语言翻译）
 function placeShort(p) {
   if (!p.place) return null;
-  return p.place.region || p.place.country || null;
+  return translatePlace(p.place.region || p.place.country) || null;
 }
 
 function buildFilters() {
@@ -195,12 +232,13 @@ function buildFilters() {
   box.innerHTML = "";
   if (!window.PHOTOS.length) return;
 
-  // 统计各地点数量
+  // 统计各地点数量（按与语言无关的 key 归类，显示用翻译后的 label）
   const counts = {};
+  const labels = {};
   let untagged = 0;
   window.PHOTOS.forEach((p) => {
-    const c = placeLabel(p);
-    if (c) counts[c] = (counts[c] || 0) + 1;
+    const k = placeKey(p);
+    if (k) { counts[k] = (counts[k] || 0) + 1; labels[k] = placeLabel(p); }
     else untagged++;
   });
 
@@ -208,11 +246,11 @@ function buildFilters() {
   // 完全没有地点信息时，不显示筛选条
   if (places.length === 0) return;
 
-  const chips = [{ key: ALL, label: "全部", n: window.PHOTOS.length }];
-  places.sort((a, b) => counts[b] - counts[a]).forEach((c) =>
-    chips.push({ key: c, label: c, n: counts[c] })
+  const chips = [{ key: ALL, label: t("filterAll"), n: window.PHOTOS.length }];
+  places.sort((a, b) => counts[b] - counts[a]).forEach((k) =>
+    chips.push({ key: k, label: labels[k], n: counts[k] })
   );
-  if (untagged) chips.push({ key: UNTAGGED, label: "未标注地点", n: untagged });
+  if (untagged) chips.push({ key: UNTAGGED, label: t("filterUntagged"), n: untagged });
 
   chips.forEach((c) => {
     const el = document.createElement("button");
@@ -229,8 +267,8 @@ function buildFilters() {
 
 function filteredPhotos() {
   if (activeFilter === ALL) return window.PHOTOS;
-  if (activeFilter === UNTAGGED) return window.PHOTOS.filter((p) => !placeLabel(p));
-  return window.PHOTOS.filter((p) => placeLabel(p) === activeFilter);
+  if (activeFilter === UNTAGGED) return window.PHOTOS.filter((p) => !placeKey(p));
+  return window.PHOTOS.filter((p) => placeKey(p) === activeFilter);
 }
 
 function renderGallery() {
@@ -319,8 +357,8 @@ function currentViewer() {
 function welcome(v) {
   const partner = (CFG.viewers || []).find((x) => x.key !== v.key);
   const line = partner
-    ? `欢迎回来，${v.short} ${v.emoji} · ${partner.short}很想你哦 💕`
-    : `欢迎回来，${v.short} ${v.emoji}`;
+    ? t("welcome")(v.short, v.emoji, partner.short)
+    : t("welcomeSolo")(v.short, v.emoji);
   toast(line, 4000);
 }
 
@@ -341,6 +379,7 @@ function askIdentity() {
     el.addEventListener("click", () => {
       localStorage.setItem(VIEWER_KEY, v.key);
       $("#identity").classList.add("hidden");
+      setLang(v.lang || "zh"); // 切换语言（珍 → 越南语）
       burstHearts(window.innerWidth / 2, window.innerHeight / 2, 14);
       welcome(v);
     });
@@ -353,7 +392,7 @@ function askIdentity() {
  *  每日情话（打字机）
  * ============================================================ */
 function startLoveQuote() {
-  const quotes = CFG.loveQuotes || [];
+  const quotes = (window.LANG === "vi" ? CFG.loveQuotesVi : CFG.loveQuotes) || CFG.loveQuotes || [];
   if (!quotes.length) return;
   // 按一年中的第几天选句，每天一句
   const now = new Date();
@@ -424,6 +463,14 @@ function nextSlide(d) {
   ssIdx = (ssIdx + d + ssList.length) % ssList.length;
   showSlide(ssIdx);
   scheduleSlide();
+}
+
+// 仅刷新当前幻灯片字幕（切换语言时用，不重新淡入）
+function refreshSlideCaption() {
+  const p = ssList[ssIdx];
+  if (!p) return;
+  const loc = placeLabel(p) ? ` · 📍${placeLabel(p)}` : "";
+  $("#ss-cap").textContent = fmtDate(p.date) + loc;
 }
 
 $("#ss-next").addEventListener("click", () => nextSlide(1));

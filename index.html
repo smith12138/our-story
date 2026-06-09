@@ -19,11 +19,11 @@
   <div id="gate" class="gate">
     <div class="gate-card">
       <div class="gate-heart">💗</div>
-      <h1 class="gate-title">我们的故事</h1>
-      <p class="gate-sub">输入密码，进入属于我们的回忆</p>
+      <h1 class="gate-title" data-i18n="gateTitle">我们的故事</h1>
+      <p class="gate-sub" data-i18n="gateSub">输入密码，进入属于我们的回忆</p>
       <form id="gate-form" autocomplete="off">
-        <input id="gate-input" type="password" placeholder="请输入密码" aria-label="密码" />
-        <button type="submit">进 入 ❤</button>
+        <input id="gate-input" type="password" placeholder="请输入密码" data-i18n-ph="gatePh" aria-label="密码" />
+        <button type="submit" data-i18n="gateBtn">进 入 ❤</button>
       </form>
       <p id="gate-error" class="gate-error"></p>
     </div>
@@ -58,16 +58,16 @@
 
     <!-- Gallery -->
     <section class="gallery-wrap">
-      <div class="section-label"><span>我们的回忆</span></div>
+      <div class="section-label"><span data-i18n="sectionLabel">我们的回忆</span></div>
       <div id="filters" class="filters"></div>
       <div id="gallery" class="gallery"></div>
-      <p id="empty" class="empty hidden">还没有照片，进入“管理”上传第一张吧 💞</p>
+      <p id="empty" class="empty hidden" data-i18n="empty">还没有照片，进入“管理”上传第一张吧 💞</p>
     </section>
 
     <footer class="footer">
       <div class="footer-heart">❤</div>
       <p id="footer-names" class="footer-names"></p>
-      <p class="footer-tip">轻触照片可放大 · 双击空白处呼出管理</p>
+      <p class="footer-tip" data-i18n="footerTip">轻触照片可放大 · 双击空白处呼出管理</p>
     </footer>
   </main>
 
@@ -84,8 +84,8 @@
   <div id="identity" class="identity hidden">
     <div class="identity-card">
       <div class="gate-heart">💞</div>
-      <h2 class="identity-title">是谁来啦？</h2>
-      <p class="identity-sub">告诉我你是谁，让我好好宠你 ❤</p>
+      <h2 class="identity-title" data-i18n="idTitle">是谁来啦？</h2>
+      <p class="identity-sub" data-i18n="idSub">告诉我你是谁，让我好好宠你 ❤</p>
       <div id="identity-choices" class="identity-choices"></div>
     </div>
   </div>
@@ -102,10 +102,10 @@
     <div id="bd-stage" class="bd-stage" aria-hidden="true"></div>
     <div class="bd-card">
       <div class="bd-cake">🎂</div>
-      <h2 class="bd-title">生日快乐</h2>
-      <p class="bd-name-line">致 <span id="bd-name"></span></p>
-      <p class="bd-msg">愿你眼里有光，笑里有甜，<br />往后岁岁年年，都有我陪在身边。❤</p>
-      <button id="bd-close" class="btn">谢谢，收下这份爱 💕</button>
+      <h2 class="bd-title" data-i18n="bdTitle">生日快乐</h2>
+      <p class="bd-name-line"><span data-i18n="bdTo">致</span> <span id="bd-name"></span></p>
+      <p class="bd-msg" data-i18n="bdMsg">愿你眼里有光，笑里有甜，<br />往后岁岁年年，都有我陪在身边。❤</p>
+      <button id="bd-close" class="btn" data-i18n="bdClose">谢谢，收下这份爱 💕</button>
     </div>
   </div>
 
@@ -114,25 +114,25 @@
   <div id="admin" class="admin hidden">
     <div class="admin-card">
       <button class="admin-x" aria-label="关闭">×</button>
-      <h2>照片管理</h2>
+      <h2 data-i18n="admTitle">照片管理</h2>
 
       <!-- step 1: admin password -->
       <div id="admin-lock" class="admin-step">
-        <p class="admin-hint">输入管理密码以解锁</p>
-        <input id="admin-pass" type="password" placeholder="管理密码" />
-        <button id="admin-unlock" class="btn">解锁</button>
+        <p class="admin-hint" data-i18n="admUnlockHint">输入管理密码以解锁</p>
+        <input id="admin-pass" type="password" placeholder="管理密码" data-i18n-ph="admPassPh" />
+        <button id="admin-unlock" class="btn" data-i18n="admUnlock">解锁</button>
         <p id="admin-lock-err" class="gate-error"></p>
       </div>
 
       <!-- step 2: github token -->
       <div id="admin-token" class="admin-step hidden">
         <p class="admin-hint">
-          首次使用请粘贴 GitHub 令牌（用于把改动保存到仓库）。<br />
-          <a href="https://github.com/settings/tokens/new?scopes=repo&description=our-story-admin" target="_blank" rel="noopener">点此创建令牌</a>
-          （勾选 <code>repo</code> 权限），令牌只保存在本机浏览器。
+          <span data-i18n="admTokenHint">首次使用请粘贴 GitHub 令牌（用于把改动保存到仓库）。</span><br />
+          <a href="https://github.com/settings/tokens/new?scopes=repo&description=our-story-admin" target="_blank" rel="noopener" data-i18n="admTokenLink">点此创建令牌</a>
+          <span data-i18n="admTokenHint2">（勾选 repo 权限），令牌只保存在本机浏览器。</span>
         </p>
-        <input id="gh-token" type="password" placeholder="ghp_xxx 或 github_pat_xxx" />
-        <button id="token-save" class="btn">保存令牌</button>
+        <input id="gh-token" type="password" placeholder="ghp_xxx 或 github_pat_xxx" data-i18n-ph="admTokenPh" />
+        <button id="token-save" class="btn" data-i18n="admTokenSave">保存令牌</button>
         <p id="token-err" class="gate-error"></p>
       </div>
 
@@ -140,14 +140,14 @@
       <div id="admin-panel" class="admin-step hidden">
         <div class="upload-zone" id="upload-zone">
           <input id="file-input" type="file" accept="image/*" multiple hidden />
-          <span>＋ 点击或拖拽照片到此上传</span>
+          <span data-i18n="admUpload">＋ 点击或拖拽照片到此上传</span>
         </div>
         <div id="admin-log" class="admin-log"></div>
-        <p class="admin-hint" style="margin-top:14px">
+        <p class="admin-hint" style="margin-top:14px" data-i18n="admGridHint">
           下方为现有照片，点 🗑 即可删除（会同步到 GitHub）。
         </p>
         <div id="admin-grid" class="admin-grid"></div>
-        <button id="token-forget" class="btn ghost">退出 / 清除令牌</button>
+        <button id="token-forget" class="btn ghost" data-i18n="admForget">退出 / 清除令牌</button>
       </div>
     </div>
   </div>
@@ -156,19 +156,20 @@
   <div id="place-modal" class="admin hidden">
     <div class="admin-card" style="max-width:420px">
       <button class="place-x admin-x" aria-label="关闭">×</button>
-      <h2>标注地点</h2>
+      <h2 data-i18n="placeTitle">标注地点</h2>
       <img id="place-preview" class="place-preview" alt="" />
       <div class="admin-step">
-        <input id="place-country" type="text" placeholder="国家（如：越南）" />
-        <input id="place-region" type="text" placeholder="地区 / 城市（如：胡志明市）" />
-        <button id="place-save" class="btn">保存地点</button>
-        <button id="place-clear" class="btn ghost">清除该照片地点</button>
+        <input id="place-country" type="text" placeholder="国家（如：越南）" data-i18n-ph="placeCountryPh" />
+        <input id="place-region" type="text" placeholder="地区 / 城市（如：胡志明市）" data-i18n-ph="placeRegionPh" />
+        <button id="place-save" class="btn" data-i18n="placeSave">保存地点</button>
+        <button id="place-clear" class="btn ghost" data-i18n="placeClear">清除该照片地点</button>
         <p id="place-msg" class="gate-error"></p>
       </div>
     </div>
   </div>
 
   <script src="config.js"></script>
+  <script src="assets/i18n.js"></script>
   <script src="assets/app.js"></script>
   <script src="assets/admin.js"></script>
 </body>

@@ -6,14 +6,18 @@ window.SITE_CONFIG = {
   // 标题 / 副标题（首页大字）
   title: "致我最爱的你",
   subtitle: "我们走过的每一个瞬间",
+  // 越南语版标题 / 副标题（选「珍」时显示）
+  titleVi: "Gửi người anh yêu nhất",
+  subtitleVi: "Từng khoảnh khắc đôi ta đi qua",
 
   // 你们的名字（显示在页脚，可留空）
   names: "谭明辉 ❤ LÊ HUYỀN TRÂN",
 
   // ---------- 身份（输对密码后选“你是谁”）----------
+  // lang 决定该身份进入后界面语言：zh 中文 / vi 越南语
   viewers: [
-    { key: "hui", name: "谭明辉", short: "辉", emoji: "🤵", color: "#7fb3ff" },
-    { key: "zhen", name: "LÊ HUYỀN TRÂN", short: "珍", emoji: "👰", color: "#ffa6c1" },
+    { key: "hui", name: "谭明辉", short: "辉", emoji: "🤵", color: "#7fb3ff", lang: "zh" },
+    { key: "zhen", name: "LÊ HUYỀN TRÂN", short: "珍", emoji: "👰", color: "#ffa6c1", lang: "vi" },
   ],
 
   // ---------- 每日情话（每天自动换一句）----------
@@ -28,6 +32,19 @@ window.SITE_CONFIG = {
     "你笑起来的样子，是我见过最美的风景。",
     "心之所向，皆是你；岁之所往，皆是我们。",
     "牵了手就不要随便说分手，我陪你到白头。",
+  ],
+  // 越南语情话（选「珍」时显示）
+  loveQuotesVi: [
+    "Từ khi gặp em, cả bầu trời sao cũng phải lu mờ.",
+    "Anh yêu không phải ký ức, mà là mỗi hiện tại có em.",
+    "Đời còn dài, mong được bên em; tháng năm ngắn ngủi, anh sẽ yêu em thật nhiều.",
+    "Em là điều may mắn dịu dàng nhất anh giấu trong năm tháng.",
+    "Muốn cùng em biến những ngày bình thường thành thơ.",
+    "Thế giới rộng lớn, may mà có em.",
+    "Mong câu chuyện của đôi ta, kể đến thiên thu vẫn thấy còn ngắn.",
+    "Nụ cười của em là khung cảnh đẹp nhất anh từng thấy.",
+    "Lòng anh hướng về đâu đều là em, năm tháng trôi về đâu đều là chúng ta.",
+    "Đã nắm tay rồi thì đừng dễ buông, anh sẽ bên em đến bạc đầu.",
   ],
 
   // ---------- 背景音乐（可选）----------

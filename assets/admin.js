@@ -66,7 +66,7 @@
     el("#token-err").textContent = "校验中…";
     // 验证令牌有效且能访问仓库
     const ok = await fetch(api("photos.json"), { headers: ghHeaders(t) }).then((r) => r.ok);
-    if (!ok) { el("#token-err").textContent = "令牌无效或无该仓库写入权限"; return; }
+    if (!ok) { el("#token-err").textContent = t("tokenInvalid"); return; }
     localStorage.setItem(TOKEN_KEY, t);
     el("#gh-token").value = "";
     el("#token-err").textContent = "";
@@ -231,8 +231,8 @@
     if (!placeTarget) return;
     const country = clear ? "" : el("#place-country").value.trim();
     const region = clear ? "" : el("#place-region").value.trim();
-    if (!clear && !country && !region) { el("#place-msg").textContent = "请至少填写国家或地区"; return; }
-    el("#place-msg").textContent = "保存中…";
+    if (!clear && !country && !region) { el("#place-msg").textContent = t("placeNeed"); return; }
+    el("#place-msg").textContent = t("placeSaving");
     const photos = window.PHOTOS.map((p) => {
       if (p.file !== placeTarget) return p;
       const np = { ...p };
@@ -246,7 +246,7 @@
       closePlaceModal();
       log(`✓ 地点已更新：${placeTarget}`, "ok");
     } catch (err) {
-      el("#place-msg").textContent = "保存失败：" + err.message;
+      el("#place-msg").textContent = t("placeFail") + err.message;
     }
   }
   el("#place-save").addEventListener("click", () => savePlace(false));
