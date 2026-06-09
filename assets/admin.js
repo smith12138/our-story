@@ -114,13 +114,13 @@
 
   /* ---------- step 2: GitHub 令牌 ---------- */
   el("#token-save").addEventListener("click", async () => {
-    const t = el("#gh-token").value.trim();
-    if (!t) return;
+    const tok = el("#gh-token").value.trim(); // 不要用 t，会遮蔽全局 i18n 的 t()
+    if (!tok) return;
     el("#token-err").textContent = "校验中…";
     // 验证令牌有效且能访问仓库
-    const ok = await fetch(api("photos.json"), { headers: ghHeaders(t) }).then((r) => r.ok);
+    const ok = await fetch(api("photos.json"), { headers: ghHeaders(tok) }).then((r) => r.ok).catch(() => false);
     if (!ok) { el("#token-err").textContent = t("tokenInvalid"); return; }
-    localStorage.setItem(TOKEN_KEY, t);
+    localStorage.setItem(TOKEN_KEY, tok);
     el("#gh-token").value = "";
     el("#token-err").textContent = "";
     routeAdmin();

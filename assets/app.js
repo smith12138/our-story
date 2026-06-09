@@ -358,9 +358,11 @@ function filteredPhotos() {
   return window.PHOTOS.filter((p) => placeKey(p) === activeFilter);
 }
 
+let galleryIO = null;
 function renderGallery() {
   buildFilters();
   const g = $("#gallery");
+  if (galleryIO) galleryIO.disconnect(); // 释放上一次的观察器，避免重复渲染时累积
   g.innerHTML = "";
   if (!window.PHOTOS.length) {
     $("#empty").classList.remove("hidden");
@@ -393,6 +395,7 @@ function renderGallery() {
     { rootMargin: "120px" }
   );
   $$(".card").forEach((c) => io.observe(c));
+  galleryIO = io;
 }
 
 /* ---------- 灯箱 ---------- */
@@ -412,6 +415,7 @@ function showLb() {
 }
 function step(d) {
   const len = window.VISIBLE.length;
+  if (!len) return;
   lbIndex = (lbIndex + d + len) % len;
   showLb();
 }
@@ -544,17 +548,19 @@ function scheduleSlide() {
 function showSlide(idx, instant) {
   const p = ssList[idx];
   if (!p) return;
-  const src = "photos/" + encodeURIComponent(p.file);
+  const enc = encodeURIComponent(p.file);
+  const thumb = "thumbs/" + enc, orig = "photos/" + enc; // 轮播用缩略图（省流量更流畅），缺失则回退原图
   const incoming = ssActive === "a" ? $("#ss-a") : $("#ss-b");
   const outgoing = ssActive === "a" ? $("#ss-b") : $("#ss-a");
-  incoming.src = src;
+  incoming.onerror = () => { incoming.onerror = null; incoming.src = orig; };
+  incoming.src = thumb;
   incoming.classList.add("show");
   incoming.style.zIndex = 2;
   outgoing.style.zIndex = 1;
   outgoing.classList.remove("show");
   // 模糊背景 + 缓慢推近
   const bg = $("#ss-bg");
-  bg.style.backgroundImage = `url("${src}")`;
+  bg.style.backgroundImage = `url("${thumb}")`;
   bg.classList.remove("kb"); void bg.offsetWidth; bg.classList.add("kb");
   const loc = placeLabel(p) ? ` · 📍${placeLabel(p)}` : "";
   $("#ss-cap").textContent = fmtDate(p.date) + loc;
