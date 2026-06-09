@@ -630,10 +630,35 @@ function initMusic() {
 
   btn.onclick = () => {
     if (audio.paused) audio.play().catch(() => {});
-    else audio.pause();
+    else { audio.pause(); musicUserPaused = true; } // 用户手动暂停后不再自动续播
   };
-  audio.onplay = () => disc.classList.add("playing");
+  audio.onplay = () => { musicUserPaused = false; disc.classList.add("playing"); };
   audio.onpause = () => disc.classList.remove("playing");
+
+  if (CFG.musicAutoplay !== false) armMusicAutoplay();
+}
+
+// 进站后用户第一次交互即自动起播（满足浏览器自动播放策略）
+let musicArmed = false;
+let musicUserPaused = false;
+function armMusicAutoplay() {
+  if (musicArmed) return;
+  musicArmed = true;
+  const audio = $("#music-audio");
+  const start = () => {
+    if (!audio.src || musicUserPaused) {
+      // 文件还没就绪 / 用户已手动关掉：保留监听，等下次交互再试
+      if (musicUserPaused) cleanup();
+      return;
+    }
+    audio.play().then(cleanup).catch(() => {});
+  };
+  const cleanup = () => {
+    document.removeEventListener("pointerdown", start);
+    document.removeEventListener("keydown", start);
+  };
+  document.addEventListener("pointerdown", start);
+  document.addEventListener("keydown", start);
 }
 
 /* ============================================================

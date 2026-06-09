@@ -83,6 +83,7 @@
           const audio = document.querySelector("#music-audio");
           audio.src = URL.createObjectURL(f);
           mbtn.classList.remove("hidden");
+          audio.play().catch(() => {}); // 试听新歌
         } else if (typeof initMusic === "function") {
           initMusic();
         }

@@ -53,6 +53,9 @@ window.SITE_CONFIG = {
     hui: "assets/music-hui.mp3",   // 辉 的歌
     zhen: "assets/music-zhen.mp3", // 珍 的歌
   },
+  // 进入相册后，用户第一次点击/触摸页面就自动开始播放（浏览器只允许这种方式）。
+  // 不想自动播放就改成 false。
+  musicAutoplay: true,
 
   // ---------- 浪漫主题（7 套，按星期每天自动轮换，也可手动选）----------
   themes: [
