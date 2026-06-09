@@ -89,9 +89,9 @@ window.SITE_CONFIG = {
   galleryPasswordHash:
     "6b0a8b2f2ace1bd89dbb4215eef7c188ec92c8cbf8950717f7ab9a59b3983e30",
 
-  // 管理后台密码（默认: admin520）—— 用于解锁“增删照片”界面。
+  // 管理后台密码（0818）—— 用于解锁“增删照片”界面。
   adminPasswordHash:
-    "58b8b098d9a41382c8d8c79ed6f729dee431c8b51d8874f9a324934b04f67252",
+    "eace080e5ab3d63e78b135db6c1b74faac43a2ab5f444b8ffe76a14bdb06ab5c",
 
   // ---------- GitHub 仓库信息（用于后台增删照片）----------
   // 部署后会自动填好；如有变动可手动修改。
