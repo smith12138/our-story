@@ -672,7 +672,8 @@ function parseLrc(text) {
   const out = [];
   const re = /\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?\]/g;
   text.split(/\r?\n/).forEach((line) => {
-    const body = line.replace(re, "").trim();
+    // 去掉时间标签，并把下载站转义的 \' \" 还原成正常的引号
+    const body = line.replace(re, "").replace(/\\(['"])/g, "$1").trim();
     if (!body || body.includes("：") || body.includes("@")) return; // 跳过词/曲/制作等信息
     let m; re.lastIndex = 0;
     while ((m = re.exec(line))) {
