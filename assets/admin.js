@@ -204,12 +204,38 @@
       d.className = "admin-thumb";
       const tag = p.place ? `<span class="tag">📍${p.place.region || p.place.country || ""}</span>` : "";
       d.innerHTML = `<img src="photos/${encodeURIComponent(p.file)}" loading="lazy" alt="" />
-        <button class="edit-place" title="标注地点">📍</button>
-        <button class="del" title="删除">🗑</button>${tag}`;
+        <button class="edit-place" title="标注地点">${icon("pin")}</button>
+        <button class="del" title="删除">${icon("trash")}</button>
+        <button class="replace" title="更换">${icon("replace")}</button>${tag}`;
       d.querySelector(".del").addEventListener("click", () => deletePhoto(p.file));
       d.querySelector(".edit-place").addEventListener("click", () => openPlaceModal(p.file));
+      d.querySelector(".replace").addEventListener("click", () => replacePhoto(p.file));
       grid.appendChild(d);
     });
+  }
+
+  /* ---------- 更换 / 更新照片（保持文件名与位置不变）---------- */
+  async function replacePhoto(file) {
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = "image/*";
+    inp.onchange = async () => {
+      const f = inp.files && inp.files[0];
+      if (!f) return;
+      try {
+        log(`更换 ${file} …`);
+        const meta = await fetch(api("photos/" + encodeURIComponent(file)), { headers: ghHeaders() }).then((r) => r.json());
+        const b64 = await readAsB64(f);
+        await ghPut("photos/" + encodeURIComponent(file), b64, `chore: replace photo ${file}`, meta.sha);
+        // 刷新本会话里这张图（同名文件需绕过缓存）
+        const bust = "photos/" + encodeURIComponent(file);
+        document.querySelectorAll(`img[src^="${bust}"]`).forEach((im) => { im.src = bust + "?v=" + Date.now(); });
+        log(t("admReplaceOk") + file, "ok");
+      } catch (err) {
+        log(`✗ ${err.message}`, "err");
+      }
+    };
+    inp.click();
   }
 
   /* ---------- 地点标注 ---------- */

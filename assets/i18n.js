@@ -51,6 +51,9 @@ const I18N = {
     placeSaving: "保存中…",
     placeFail: "保存失败：",
     tokenInvalid: "令牌无效或无该仓库写入权限",
+    themeTitle: "浪漫主题",
+    themeAuto: "每日自动轮换",
+    admReplaceOk: "✓ 已更换：",
   },
 
   vi: {
@@ -98,6 +101,9 @@ const I18N = {
     placeSaving: "Đang lưu…",
     placeFail: "Lưu thất bại: ",
     tokenInvalid: "Token không hợp lệ hoặc không có quyền ghi vào kho",
+    themeTitle: "Chủ đề lãng mạn",
+    themeAuto: "Tự đổi mỗi ngày",
+    admReplaceOk: "✓ Đã thay ảnh: ",
   },
 };
 

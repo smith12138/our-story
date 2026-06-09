@@ -47,10 +47,23 @@ window.SITE_CONFIG = {
     "Đã nắm tay rồi thì đừng dễ buông, anh sẽ bên em đến bạc đầu.",
   ],
 
-  // ---------- 背景音乐（可选）----------
-  // 想要背景音乐：把一首 mp3 放到 assets/ 下，并把文件名填这里，例如 "assets/song.mp3"。
-  // 留空则不显示音乐按钮。
-  musicUrl: "",
+  // ---------- 背景音乐（男 / 女 不同）----------
+  // 把 mp3 放到 assets/ 下，按身份各填一首；文件不存在时音乐按钮会自动隐藏。
+  music: {
+    hui: "assets/music-hui.mp3",   // 辉 的歌
+    zhen: "assets/music-zhen.mp3", // 珍 的歌
+  },
+
+  // ---------- 浪漫主题（7 套，按星期每天自动轮换，也可手动选）----------
+  themes: [
+    { key: "rosegold", zh: "玫瑰金",   vi: "Vàng hồng",     swatch: ["#e8a0b0", "#e7c9a9"] },
+    { key: "sakura",   zh: "樱花粉",   vi: "Hoa anh đào",   swatch: ["#ff9ec4", "#ffd1e3"] },
+    { key: "lavender", zh: "薰衣草",   vi: "Oải hương",     swatch: ["#c9a7e8", "#e0c3fc"] },
+    { key: "ocean",    zh: "蔚蓝海岸", vi: "Biển xanh",     swatch: ["#7fc8e8", "#8fe0cf"] },
+    { key: "peach",    zh: "蜜桃日落", vi: "Hoàng hôn đào", swatch: ["#ffb38a", "#ffd9a0"] },
+    { key: "emerald",  zh: "翡翠绿",   vi: "Ngọc lục bảo",  swatch: ["#8fdcae", "#cfe89a"] },
+    { key: "starry",   zh: "星空蓝调", vi: "Trời sao",      swatch: ["#9fb3ff", "#c7b3ff"] },
+  ],
 
   // 结婚纪念日（用于首页“结婚 N 天”计数，格式 YYYY-MM-DD；留空则不显示）
   anniversary: "2025-10-07",

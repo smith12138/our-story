@@ -50,9 +50,9 @@
         <img id="ss-b" class="ss-img" alt="" />
         <div class="ss-shade"></div>
         <div id="ss-cap" class="ss-cap"></div>
-        <button id="ss-prev" class="ss-nav ss-prev" aria-label="上一张">‹</button>
-        <button id="ss-next" class="ss-nav ss-next" aria-label="下一张">›</button>
-        <button id="ss-play" class="ss-play" aria-label="播放/暂停">⏸</button>
+        <button id="ss-prev" class="ss-nav ss-prev" aria-label="上一张" data-icon="chevronLeft"></button>
+        <button id="ss-next" class="ss-nav ss-next" aria-label="下一张" data-icon="chevronRight"></button>
+        <button id="ss-play" class="ss-play" aria-label="播放/暂停"></button>
       </div>
     </section>
 
@@ -73,10 +73,10 @@
 
   <!-- ░░ 灯箱 ░░ -->
   <div id="lightbox" class="lightbox hidden">
-    <button class="lb-close" aria-label="关闭">×</button>
-    <button class="lb-prev" aria-label="上一张">‹</button>
+    <button class="lb-close" aria-label="关闭" data-icon="x"></button>
+    <button class="lb-prev" aria-label="上一张" data-icon="chevronLeft"></button>
     <img id="lb-img" class="lb-img" alt="" />
-    <button class="lb-next" aria-label="下一张">›</button>
+    <button class="lb-next" aria-label="下一张" data-icon="chevronRight"></button>
     <div id="lb-caption" class="lb-caption"></div>
   </div>
 
@@ -94,8 +94,14 @@
   <div id="toast" class="toast hidden"></div>
 
   <!-- ░░ 背景音乐 ░░ -->
-  <button id="music-btn" class="music-btn hidden" title="背景音乐">♪</button>
+  <button id="music-btn" class="music-btn hidden" title="背景音乐"><span class="music-disc" data-icon="music"></span></button>
   <audio id="music-audio" loop></audio>
+
+  <!-- ░░ 主题面板 ░░ -->
+  <div id="theme-panel" class="theme-panel">
+    <h4 data-i18n="themeTitle">浪漫主题</h4>
+    <div id="theme-list" class="theme-list"></div>
+  </div>
 
   <!-- ░░ 生日庆祝 ░░ -->
   <div id="birthday-overlay" class="birthday-overlay hidden">
@@ -109,11 +115,16 @@
     </div>
   </div>
 
+  <!-- ░░ 悬浮按钮（主题 + 管理）░░ -->
+  <div class="fab-stack">
+    <button id="admin-fab" class="fab admin-fab hidden" title="管理照片" data-icon="settings"></button>
+    <button id="theme-btn" class="fab" title="切换主题" data-icon="palette"></button>
+  </div>
+
   <!-- ░░ 管理后台 ░░ -->
-  <button id="admin-fab" class="admin-fab hidden" title="管理照片">⚙</button>
   <div id="admin" class="admin hidden">
     <div class="admin-card">
-      <button class="admin-x" aria-label="关闭">×</button>
+      <button class="admin-x" aria-label="关闭" data-icon="x"></button>
       <h2 data-i18n="admTitle">照片管理</h2>
 
       <!-- step 1: admin password -->
@@ -155,7 +166,7 @@
   <!-- ░░ 地点标注 ░░ -->
   <div id="place-modal" class="admin hidden">
     <div class="admin-card" style="max-width:420px">
-      <button class="place-x admin-x" aria-label="关闭">×</button>
+      <button class="place-x admin-x" aria-label="关闭" data-icon="x"></button>
       <h2 data-i18n="placeTitle">标注地点</h2>
       <img id="place-preview" class="place-preview" alt="" />
       <div class="admin-step">

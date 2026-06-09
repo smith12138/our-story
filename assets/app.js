@@ -8,6 +8,29 @@ const $$ = (s) => [...document.querySelectorAll(s)];
 // 全局照片列表（admin.js 也会用到）
 window.PHOTOS = [];
 
+/* ---------- 高级线性图标（Lucide 风格 SVG）---------- */
+const ICONS = {
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  palette: '<circle cx="13.5" cy="6.5" r=".9" fill="currentColor" stroke="none"/><circle cx="17.5" cy="10.5" r=".9" fill="currentColor" stroke="none"/><circle cx="8.5" cy="7.5" r=".9" fill="currentColor" stroke="none"/><circle cx="6.5" cy="12.5" r=".9" fill="currentColor" stroke="none"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.555C21.965 6.012 17.461 2 12 2z"/>',
+  music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  chevronLeft: '<path d="m15 18-6-6 6-6"/>',
+  chevronRight: '<path d="m9 18 6-6-6-6"/>',
+  play: '<polygon points="6 3 20 12 6 21 6 3" fill="currentColor" stroke="none"/>',
+  pause: '<rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/>',
+  trash: '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>',
+  pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+  replace: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+};
+function icon(name) {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ""}</svg>`;
+}
+function applyIcons() {
+  $$("[data-icon]").forEach((el) => { el.innerHTML = icon(el.dataset.icon); });
+}
+window.icon = icon;
+
 async function sha256(text) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -41,11 +64,7 @@ $("#gate-form").addEventListener("submit", async (e) => {
   }
 });
 
-// 初始按上次记忆的语言渲染密码门
-window.LANG = localStorage.getItem("ourstory_lang") || "zh";
-applyLang();
-
-if (sessionStorage.getItem(GATE_KEY) === "1") unlock();
+// 初始渲染在文件末尾执行（确保所有 const 已初始化）
 
 /* ---------- 多语言 ---------- */
 function setLang(l) {
@@ -64,6 +83,8 @@ function applyLang() {
   $("#hero-title").textContent = window.LANG === "vi" ? (CFG.titleVi || CFG.title) : CFG.title;
   $("#hero-sub").textContent = window.LANG === "vi" ? (CFG.subtitleVi || CFG.subtitle) : CFG.subtitle;
 
+  buildThemePicker(); // 主题名称随语言变化
+
   // 已经进入相册时，刷新动态内容
   if (!$("#app").classList.contains("hidden")) {
     startCounter();
@@ -72,6 +93,70 @@ function applyLang() {
     refreshSlideCaption();
   }
 }
+
+/* ---------- 浪漫主题（7 套，每天自动轮换，可手动选）---------- */
+const THEME_KEY = "ourstory_theme";
+
+function dailyThemeKey() {
+  const ts = CFG.themes || [];
+  if (!ts.length) return "rosegold";
+  return ts[new Date().getDay() % ts.length].key; // 按星期几每天换一套
+}
+function storedTheme() { return localStorage.getItem(THEME_KEY) || "auto"; }
+function activeThemeKey() {
+  const s = storedTheme();
+  return s === "auto" ? dailyThemeKey() : s;
+}
+function applyTheme() {
+  document.documentElement.setAttribute("data-theme", activeThemeKey());
+  markThemeActive();
+}
+function setTheme(key) {
+  localStorage.setItem(THEME_KEY, key);
+  applyTheme();
+}
+function markThemeActive() {
+  const cur = storedTheme();
+  $$("#theme-list .theme-item").forEach((it) =>
+    it.classList.toggle("active", it.dataset.key === cur)
+  );
+}
+function buildThemePicker() {
+  const list = $("#theme-list");
+  if (!list) return;
+  const ts = CFG.themes || [];
+  list.innerHTML = "";
+
+  // “每日自动”选项，色点用今天的主题
+  const todays = ts.find((t) => t.key === dailyThemeKey()) || { swatch: ["#fff", "#fff"] };
+  const auto = document.createElement("div");
+  auto.className = "theme-item";
+  auto.dataset.key = "auto";
+  auto.innerHTML = `<span class="theme-dot" style="background:linear-gradient(135deg,${todays.swatch.join(",")})"></span>
+    <span>${t("themeAuto")}</span><span class="chk">${icon("check")}</span>`;
+  auto.addEventListener("click", () => setTheme("auto"));
+  list.appendChild(auto);
+
+  ts.forEach((th) => {
+    const it = document.createElement("div");
+    it.className = "theme-item";
+    it.dataset.key = th.key;
+    const name = window.LANG === "vi" ? th.vi : th.zh;
+    it.innerHTML = `<span class="theme-dot" style="background:linear-gradient(135deg,${th.swatch.join(",")})"></span>
+      <span>${name}</span><span class="chk">${icon("check")}</span>`;
+    it.addEventListener("click", () => setTheme(th.key));
+    list.appendChild(it);
+  });
+  markThemeActive();
+}
+// 主题按钮开关
+$("#theme-btn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  $("#theme-panel").classList.toggle("show");
+});
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#theme-panel, #theme-btn")) $("#theme-panel").classList.remove("show");
+});
 
 /* ---------- 站点内容 ---------- */
 function initSite() {
@@ -380,6 +465,7 @@ function askIdentity() {
       localStorage.setItem(VIEWER_KEY, v.key);
       $("#identity").classList.add("hidden");
       setLang(v.lang || "zh"); // 切换语言（珍 → 越南语）
+      initMusic();             // 按身份换歌
       burstHearts(window.innerWidth / 2, window.innerHeight / 2, 14);
       welcome(v);
     });
@@ -434,7 +520,7 @@ function startSlideshow() {
   ssList = shuffle(window.PHOTOS).slice(0, Math.min(15, window.PHOTOS.length));
   ssIdx = 0; ssActive = "a"; ssPlaying = true;
   sec.classList.remove("hidden");
-  $("#ss-play").textContent = "⏸";
+  $("#ss-play").innerHTML = icon("pause");
   showSlide(0, true);
   scheduleSlide();
 }
@@ -477,7 +563,7 @@ $("#ss-next").addEventListener("click", () => nextSlide(1));
 $("#ss-prev").addEventListener("click", () => nextSlide(-1));
 $("#ss-play").addEventListener("click", () => {
   ssPlaying = !ssPlaying;
-  $("#ss-play").textContent = ssPlaying ? "⏸" : "▶";
+  $("#ss-play").innerHTML = ssPlaying ? icon("pause") : icon("play");
   scheduleSlide();
 });
 $(".ss-stage").addEventListener("mouseenter", () => { clearTimeout(ssTimer); });
@@ -503,7 +589,7 @@ function burstHearts(x, y, n = 6) {
 function initClickHearts() {
   document.addEventListener("click", (e) => {
     // 交互元素与弹层上不触发，避免干扰
-    if (e.target.closest("button, a, input, .card, .chip, .id-pick, .admin, .identity, .lightbox, .ss-stage, .admin-fab, .music-btn"))
+    if (e.target.closest("button, a, input, .card, .chip, .id-pick, .admin, .identity, .lightbox, .ss-stage, .fab-stack, .music-btn, .theme-panel"))
       return;
     burstHearts(e.clientX, e.clientY, 5);
   });
@@ -520,15 +606,35 @@ $("#lb-img").addEventListener("dblclick", (e) => {
  *  背景音乐（可选）
  * ============================================================ */
 function initMusic() {
-  if (!CFG.musicUrl) return;
   const btn = $("#music-btn");
   const audio = $("#music-audio");
-  audio.src = CFG.musicUrl;
-  btn.classList.remove("hidden");
-  let on = false;
-  btn.addEventListener("click", () => {
-    on = !on;
-    if (on) { audio.play().catch(() => {}); btn.classList.add("playing"); }
-    else { audio.pause(); btn.classList.remove("playing"); }
-  });
+  const disc = btn.querySelector(".music-disc");
+  const v = currentViewer();
+  const url = v && CFG.music ? CFG.music[v.key] : "";
+
+  if (!url) { btn.classList.add("hidden"); audio.pause(); return; }
+
+  // 文件存在才显示按钮（避免出现一个点了没反应的按钮）
+  fetch(url, { method: "HEAD" })
+    .then((r) => {
+      if (r.ok) { audio.src = url; btn.classList.remove("hidden"); }
+      else btn.classList.add("hidden");
+    })
+    .catch(() => btn.classList.add("hidden"));
+
+  btn.onclick = () => {
+    if (audio.paused) audio.play().catch(() => {});
+    else audio.pause();
+  };
+  audio.onplay = () => disc.classList.add("playing");
+  audio.onpause = () => disc.classList.remove("playing");
 }
+
+/* ============================================================
+ *  初始化（放在文件末尾，确保上面的 const 都已初始化）
+ * ============================================================ */
+applyIcons();
+window.LANG = localStorage.getItem("ourstory_lang") || "zh";
+applyTheme();
+applyLang();
+if (sessionStorage.getItem(GATE_KEY) === "1") unlock();
