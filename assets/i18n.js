@@ -54,6 +54,10 @@ const I18N = {
     themeTitle: "浪漫主题",
     themeAuto: "每日自动轮换",
     admReplaceOk: "✓ 已更换：",
+    admMusicTitle: "背景音乐（点按钮上传 / 更换）",
+    admMusicFor: (n) => `🎵 ${n} 的歌`,
+    admMusicUploading: "歌曲上传中…",
+    admMusicOk: "✓ 已更新歌曲：",
   },
 
   vi: {
@@ -104,6 +108,10 @@ const I18N = {
     themeTitle: "Chủ đề lãng mạn",
     themeAuto: "Tự đổi mỗi ngày",
     admReplaceOk: "✓ Đã thay ảnh: ",
+    admMusicTitle: "Nhạc nền (bấm để tải / đổi)",
+    admMusicFor: (n) => `🎵 Nhạc của ${n}`,
+    admMusicUploading: "Đang tải nhạc…",
+    admMusicOk: "✓ Đã cập nhật nhạc: ",
   },
 };
 

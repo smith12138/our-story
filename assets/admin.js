@@ -39,6 +39,49 @@
     if (!token()) return show("#admin-token");
     show("#admin-panel");
     renderAdminGrid();
+    buildMusicAdmin();
+  }
+
+  /* ---------- 背景音乐上传 / 更换 ---------- */
+  function buildMusicAdmin() {
+    const box = el("#music-admin");
+    if (!box) return;
+    box.innerHTML = "";
+    const viewers = window.SITE_CONFIG.viewers || [];
+    const music = window.SITE_CONFIG.music || {};
+    viewers.forEach((v) => {
+      const path = music[v.key];
+      if (!path) return;
+      const btn = document.createElement("button");
+      btn.className = "btn";
+      btn.textContent = t("admMusicFor")(v.short || v.name);
+      btn.addEventListener("click", () => uploadMusic(path));
+      box.appendChild(btn);
+    });
+  }
+
+  function uploadMusic(path) {
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = "audio/*";
+    inp.onchange = async () => {
+      const f = inp.files && inp.files[0];
+      if (!f) return;
+      try {
+        log(t("admMusicUploading") + " " + f.name);
+        const b64 = await readAsB64(f);
+        // 已存在则取 sha 以覆盖
+        let sha;
+        const meta = await fetch(api(path), { headers: ghHeaders() }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+        if (meta && meta.sha) sha = meta.sha;
+        await ghPut(path, b64, `chore: update music ${path}`, sha);
+        log(t("admMusicOk") + path, "ok");
+        if (typeof initMusic === "function") initMusic(); // 立即让音乐按钮出现
+      } catch (err) {
+        log(`✗ ${err.message}`, "err");
+      }
+    };
+    inp.click();
   }
 
   /* ---------- step 1: 管理密码 ---------- */
@@ -203,7 +246,7 @@
       const d = document.createElement("div");
       d.className = "admin-thumb";
       const tag = p.place ? `<span class="tag">📍${p.place.region || p.place.country || ""}</span>` : "";
-      d.innerHTML = `<img src="photos/${encodeURIComponent(p.file)}" loading="lazy" alt="" />
+      d.innerHTML = `<img src="photos/${encodeURIComponent(p.file)}" loading="lazy" decoding="async" alt="" />
         <button class="edit-place" title="标注地点">${icon("pin")}</button>
         <button class="del" title="删除">${icon("trash")}</button>
         <button class="replace" title="更换">${icon("replace")}</button>${tag}`;
@@ -255,12 +298,13 @@
 
   async function savePlace(clear) {
     if (!placeTarget) return;
+    const file = placeTarget; // 关闭弹窗会清空 placeTarget，先存下文件名
     const country = clear ? "" : el("#place-country").value.trim();
     const region = clear ? "" : el("#place-region").value.trim();
     if (!clear && !country && !region) { el("#place-msg").textContent = t("placeNeed"); return; }
     el("#place-msg").textContent = t("placeSaving");
     const photos = window.PHOTOS.map((p) => {
-      if (p.file !== placeTarget) return p;
+      if (p.file !== file) return p;
       const np = { ...p };
       if (clear || (!country && !region)) delete np.place;
       else np.place = { country, region };
@@ -270,7 +314,7 @@
       await putManifest(photos);
       renderAdminGrid();
       closePlaceModal();
-      log(`✓ 地点已更新：${placeTarget}`, "ok");
+      log(`✓ 地点已更新：${file}`, "ok");
     } catch (err) {
       el("#place-msg").textContent = t("placeFail") + err.message;
     }

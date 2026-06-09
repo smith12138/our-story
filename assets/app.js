@@ -533,13 +533,18 @@ function scheduleSlide() {
 function showSlide(idx, instant) {
   const p = ssList[idx];
   if (!p) return;
+  const src = "photos/" + encodeURIComponent(p.file);
   const incoming = ssActive === "a" ? $("#ss-a") : $("#ss-b");
   const outgoing = ssActive === "a" ? $("#ss-b") : $("#ss-a");
-  incoming.src = "photos/" + encodeURIComponent(p.file);
-  incoming.classList.add("show", "kb");
+  incoming.src = src;
+  incoming.classList.add("show");
   incoming.style.zIndex = 2;
   outgoing.style.zIndex = 1;
-  outgoing.classList.remove("show", "kb");
+  outgoing.classList.remove("show");
+  // 模糊背景 + 缓慢推近
+  const bg = $("#ss-bg");
+  bg.style.backgroundImage = `url("${src}")`;
+  bg.classList.remove("kb"); void bg.offsetWidth; bg.classList.add("kb");
   const loc = placeLabel(p) ? ` · 📍${placeLabel(p)}` : "";
   $("#ss-cap").textContent = fmtDate(p.date) + loc;
   ssActive = ssActive === "a" ? "b" : "a";

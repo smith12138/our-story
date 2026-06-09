@@ -46,6 +46,7 @@
     <!-- Slideshow / 轮播 -->
     <section id="slideshow" class="slideshow hidden">
       <div class="ss-stage">
+        <div id="ss-bg" class="ss-bg"></div>
         <img id="ss-a" class="ss-img" alt="" />
         <img id="ss-b" class="ss-img" alt="" />
         <div class="ss-shade"></div>
@@ -158,7 +159,9 @@
           下方为现有照片，点 🗑 即可删除（会同步到 GitHub）。
         </p>
         <div id="admin-grid" class="admin-grid"></div>
-        <button id="token-forget" class="btn ghost" data-i18n="admForget">退出 / 清除令牌</button>
+        <p class="admin-hint" style="margin-top:16px" data-i18n="admMusicTitle">背景音乐（点按钮上传 / 更换）</p>
+        <div id="music-admin" class="music-admin"></div>
+        <button id="token-forget" class="btn ghost" style="margin-top:16px" data-i18n="admForget">退出 / 清除令牌</button>
       </div>
     </div>
   </div>
