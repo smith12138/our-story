@@ -516,7 +516,7 @@ function startLoveQuote() {
 /* ============================================================
  *  幻灯片轮播
  * ============================================================ */
-let ssList = [], ssIdx = 0, ssTimer = null, ssActive = "a", ssPlaying = true, ssHover = false;
+let ssList = [], ssIdx = 0, ssTimer = null, ssActive = "a", ssPlaying = true, ssHover = false, ssLast = 0;
 const SS_INTERVAL = 6000;
 
 function shuffle(a) {
@@ -569,6 +569,10 @@ function showSlide(idx, instant) {
 }
 
 function nextSlide(d) {
+  // 防抖：任意一次切换后 0.7s 内不再切换，避免点击后被自动定时器立刻又切走
+  const now = performance.now();
+  if (now - ssLast < 700) { scheduleSlide(); return; }
+  ssLast = now;
   ssIdx = (ssIdx + d + ssList.length) % ssList.length;
   showSlide(ssIdx);
   scheduleSlide();
